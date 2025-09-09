@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <meta name="theme-color" content="#0b0f14" />
+  <title>Play — Buzzy Games Launcher</title>
+
+  <style>
+    :root{
+      --bg:#0b0f14; --bg-elev:#111826; --txt:#e6ebf5; --muted:#aab6ca;
+      --accent:#fbbf24; --accent-2:#8b5cf6; --glass:rgba(255,255,255,.06);
+      --radius:18px; --shadow:0 8px 24px rgba(0,0,0,.3);
+    }
+    *{box-sizing:border-box}
+    html,body{height:100%}
+    body{
+      margin:0; background:radial-gradient(1200px 600px at 20% -10%, #152033, transparent 60%),
+                 radial-gradient(1200px 800px at 110% 10%, #1c2a44, transparent 50%), var(--bg);
+      color:var(--txt); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
+    }
+    a{color:inherit; text-decoration:none}
+
+    /* Top bar */
+    .topbar{
+      position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:12px;
+      padding:12px 14px; background:linear-gradient(180deg, rgba(11,15,20,.92), rgba(11,15,20,.72));
+      border-bottom:1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px);
+    }
+    .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
+      background:linear-gradient(140deg,var(--accent),var(--accent-2));box-shadow:0 6px 16px rgba(251,191,36,.35)}
+    .brand{font-weight:800}
+    .grow{flex:1}
+    .btn, .icon-btn{
+      background:linear-gradient(140deg,var(--accent),var(--accent-2));
+      border:none; color:#08121f; font-weight:700; padding:10px 14px; border-radius:12px; cursor:pointer;
+      box-shadow:0 6px 16px rgba(251,191,36,.35);
+    }
+    .icon-btn{
+      display:flex; align-items:center; gap:8px; background:transparent; color:var(--txt);
+      border:1px solid rgba(255,255,255,.12); box-shadow:none; padding:8px 12px;
+    }
+
+    /* Hero (optional image) */
+    .hero{
+      position:relative; height:220px; border-bottom:1px solid rgba(255,255,255,.08); overflow:hidden;
+      background:#0f1829;
+    }
+    .hero img{
+      position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:blur(8px) brightness(0.75);
+      transform:scale(1.08);
+    }
+    .hero-overlay{
+      position:relative; z-index:1; height:100%; display:flex; align-items:end;
+      background:linear-gradient(180deg, rgba(11,15,20,0), rgba(11,15,20,.75) 40%, rgba(11,15,20,1) 80%);
+      padding:16px;
+    }
+    .title{font-size:20px; font-weight:800; margin:0}
+    .desc{color:var(--muted); font-size:13px; margin-top:6px; max-width:1000px}
+
+    /* Player frame */
+    .frame-wrap{
+      position:relative; margin:16px; margin-top:0; border:1px solid rgba(255,255,255,.1);
+      border-radius:16px; overflow:hidden; box-shadow: var(--shadow);
+      background:#0e1626;
+      height: calc(100vh - 220px - 16px - 64px); /* viewport minus hero and margins & room for controls */
+      min-height: 360px;
+    }
+    .controls{
+      position:absolute; top:8px; right:8px; display:flex; gap:8px; z-index:3;
+    }
+    iframe{
+      position:absolute; inset:0; width:100%; height:100%; border:0; background:#000;
+    }
+
+    /* Install gate overlay */
+    .gate{
+      position:absolute; inset:0; display:none; align-items:center; justify-content:center; z-index:4;
+      background:rgba(0,0,0,.6); backdrop-filter: blur(4px);
+    }
+    .gate .panel{
+      background:var(--bg-elev); padding:18px; border:1px solid rgba(255,255,255,.12);
+      border-radius:16px; max-width:560px;
+    }
+
+    /* Empty/error state */
+    .empty{
+      margin:20px; padding:22px; border:1px dashed rgba(255,255,255,.2); border-radius:16px;
+      color:var(--muted); text-align:center; background:rgba(255,255,255,.03)
+    }
+
+    @media (max-width:720px){
+      .frame-wrap{ height: calc(100vh - 220px - 12px - 56px); }
+    }
+  </style>
+</head>
+<body>
+  <header class="topbar">
+    <div class="logo" aria-hidden="true">🐝</div>
+    <div class="brand">Buzzy Games</div>
+    <div class="grow"></div>
+    <button class="icon-btn" id="homeBtn" title="Back to Home">
+      <span>← Home</span>
+    </button>
+  </header>
+
+  <div class="hero" id="hero">
+    <img id="heroImg" alt="" />
+    <div class="hero-overlay">
+      <div>
+        <h1 class="title" id="gameTitle">Loading…</h1>
+        <div class="desc" id="gameDesc"></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="frame-wrap" id="frameWrap">
+    <div class="controls">
+      <button class="icon-btn" id="openNew">Open in New Tab</button>
+      <button class="icon-btn" id="fullscreenBtn">Fullscreen</button>
+    </div>
+    <div class="gate" id="installGate">
+      <div class="panel">
+        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px">
+          <div class="logo" style="width:42px;height:42px">🐝</div>
+          <h3 style="margin:0">Install Buzzy Games to play</h3>
+        </div>
+        <div id="tips" style="color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:12px"></div>
+        <div style="display:flex; gap:8px; justify-content:flex-end">
+          <button class="icon-btn" id="closeGate">Close</button>
+          <button class="btn" id="installNow">Install now</button>
+        </div>
+      </div>
+    </div>
+    <iframe id="gameFrame" allow="fullscreen; gamepad; autoplay; xr-spatial-tracking" referrerpolicy="no-referrer"></iframe>
+  </div>
+
+  <div id="errorBox" class="empty" hidden></div>
+
+  <script>
+    // --- Helpers ---
+    const $ = (s,el=document)=>el.querySelector(s);
+    const params = new URLSearchParams(location.search);
+    const rawUrl = params.get('url') || '';
+    const title = params.get('title') || 'Untitled Game';
+    const image = params.get('image') || '';
+    const desc  = params.get('desc')  || '';
+
+    document.title = `${title} — Buzzy Games Launcher`;
+    $('#gameTitle').textContent = title;
+    $('#gameDesc').textContent = desc;
+    if(image){
+      $('#heroImg').src = image;
+      $('#heroImg').style.display = '';
+    } else {
+      $('#heroImg').style.display = 'none';
+    }
+
+    // Validate URL
+    let gameURL = null;
+    try{
+      const u = new URL(rawUrl);
+      if(u.protocol==='http:' || u.protocol==='https:') gameURL = u.href;
+    }catch{ /* ignore */ }
+
+    if(!gameURL){
+      showError('Invalid or missing game URL. Make sure you pass "?url=https://example.com" in the link.');
+    }else{
+      $('#gameFrame').src = gameURL;
+    }
+
+    function showError(msg){
+      const eb = $('#errorBox');
+      eb.hidden = false;
+      eb.innerHTML = `<div style="font-weight:700; margin-bottom:6px">Cannot load game</div>
+        <div>${msg}</div>
+        <div style="margin-top:10px">Tip: Some sites block embedding in iframes. Try <b>Open in New Tab</b>.</div>`;
+      $('#frameWrap').style.display = 'none';
+    }
+
+    // --- Back/Home ---
+    $('#homeBtn').onclick = () => { location.href = './'; };
+
+    // --- Open in new tab ---
+    $('#openNew').onclick = () => { if(gameURL) window.open(gameURL, '_blank', 'noopener,noreferrer'); };
+
+    // --- Fullscreen toggle ---
+    const wrap = $('#frameWrap');
+    const fsBtn = $('#fullscreenBtn');
+    fsBtn.onclick = async ()=>{
+      if(!document.fullscreenElement){
+        try{ await wrap.requestFullscreen(); }catch(e){ console.warn(e); }
+      } else {
+        await document.exitFullscreen();
+      }
+    };
+    document.addEventListener('fullscreenchange', ()=>{
+      fsBtn.textContent = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
+    });
+
+    // --- Install gate (must install before playing) ---
+    const LS_KEY = 'buzzy.installed';
+    let deferredPrompt = null;
+    function isInstalled(){
+      return window.matchMedia('(display-mode: standalone)').matches
+          || navigator.standalone === true
+          || document.referrer.startsWith('android-app://')
+          || JSON.parse(localStorage.getItem(LS_KEY) || 'false');
+    }
+    function setInstalled(v){
+      localStorage.setItem(LS_KEY, JSON.stringify(!!v));
+      updateGate();
+    }
+    function platformTipsHtml(){
+      const ua = navigator.userAgent.toLowerCase();
+      const isIOS = /iphone|ipad|ipod/.test(ua);
+      const isAndroid = /android/.test(ua);
+      if (isIOS) return `<ol style="margin:0;padding-left:18px">
+          <li>Tap the <b>Share</b> icon in Safari.</li>
+          <li>Choose <b>Add to Home Screen</b>.</li>
+          <li>Open <b>Buzzy Games Launcher</b> from your Home Screen.</li>
+        </ol>`;
+      if (isAndroid) return `<ol style="margin:0;padding-left:18px">
+          <li>Tap the <b>⋮</b> menu in Chrome.</li>
+          <li>Choose <b>Install app</b> (or <b>Add to Home screen</b>).</li>
+          <li>Launch <b>Buzzy Games Launcher</b>.</li>
+        </ol>`;
+      return `<ol style="margin:0;padding-left:18px">
+          <li>Click the <b>Install</b> icon in the address bar (Chrome/Edge) or menu.</li>
+          <li>Select <b>Install Buzzy Games Launcher</b>.</li>
+          <li>Open the installed window/app.</li>
+        </ol>`;
+    }
+    function updateGate(){
+      const gate = $('#installGate');
+      if(isInstalled()){
+        gate.style.display = 'none';
+      }else{
+        $('#tips').innerHTML = platformTipsHtml();
+        gate.style.display = 'flex';
+      }
+    }
+    $('#closeGate').onclick = ()=> $('#installGate').style.display = 'none';
+    $('#installNow').onclick = async ()=>{
+      if (deferredPrompt){
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if(choice.outcome==='accepted'){ setInstalled(true); }
+        deferredPrompt = null;
+      } else {
+        // Show tips; user can follow manual steps
+        alert('Use your browser’s Install/Add to Home Screen option to install Buzzy Games.');
+      }
+    };
+    window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; });
+    window.addEventListener('appinstalled', ()=> setInstalled(true));
+
+    // Service worker (so the shell loads offline; game content remains online)
+    if('serviceWorker' in navigator){
+      window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(console.warn));
+    }
+
+    // Enforce gate on load
+    updateGate();
+
+    // Heads-up for sites that block iframes:
+    // We can’t reliably detect X-Frame-Options/CSP blocks cross-origin; if the frame stays blank,
+    // the user can click “Open in New Tab”.
+  </script>
+</body>
+</html>
