@@ -9,47 +9,38 @@
 
   <style>
     :root{
-      --bg:#0b0f14;
-      --bg-elev:#111826;
-      --bg-elev-2:#152033;
-      --txt:#e6ebf5;
-      --muted:#aab6ca;
-      --accent:#fbbf24; /* honey */
-      --accent-2:#8b5cf6;
-      --chip:#1a2841;
-      --card:#111a2b;
-      --glass:rgba(255,255,255,0.04);
-      --radius:18px;
-      --shadow:0 8px 24px rgba(0,0,0,.3);
+      --bg:#0b0f14; --bg-elev:#111826; --bg-elev-2:#152033;
+      --txt:#e6ebf5; --muted:#aab6ca;
+      --accent:#fbbf24; --accent-2:#8b5cf6;
+      --chip:#1a2841; --card:#111a2b; --glass:rgba(255,255,255,0.04);
+      --radius:18px; --shadow:0 8px 24px rgba(0,0,0,.3);
     }
     *{box-sizing:border-box}
     html,body{height:100%}
     body{
       margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
-      color:var(--txt); background: radial-gradient(1200px 600px at 20% -10%, #152033, transparent 60%),
-                         radial-gradient(1200px 800px at 110% 10%, #1c2a44, transparent 50%),
-                         var(--bg);
+      color:var(--txt);
+      background: radial-gradient(1200px 600px at 20% -10%, #152033, transparent 60%),
+                  radial-gradient(1200px 800px at 110% 10%, #1c2a44, transparent 50%),
+                  var(--bg);
       background-attachment: fixed;
     }
     a{color:inherit; text-decoration:none}
+    button[disabled]{opacity:.5; cursor:not-allowed}
 
     /* Top bar */
     .topbar{
       position:sticky; top:0; z-index:50;
-      display:flex; align-items:center; gap:14px;
-      padding:14px 18px;
+      display:flex; align-items:center; gap:14px; padding:14px 18px;
       background: linear-gradient(180deg, rgba(11,15,20,.9), rgba(11,15,20,.6));
       backdrop-filter: blur(8px);
       border-bottom: 1px solid rgba(255,255,255,.06);
     }
-    .brand{
-      display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px;
-    }
+    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px;}
     .logo{
       width:36px; height:36px; display:grid; place-items:center; border-radius:10px;
       background: linear-gradient(140deg, var(--accent), var(--accent-2));
-      box-shadow: 0 6px 16px rgba(251,191,36,.35);
-      font-weight:900;
+      box-shadow: 0 6px 16px rgba(251,191,36,.35); font-weight:900;
     }
     .grow{flex:1}
     .search{
@@ -62,16 +53,11 @@
       border:none; color:#08121f; font-weight:700; padding:10px 14px; border-radius:12px; cursor:pointer;
       box-shadow:0 6px 16px rgba(251,191,36,.35);
     }
-    .btn.secondary{
-      background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12);
-      box-shadow:none;
-    }
+    .btn.secondary{ background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12); box-shadow:none; }
 
     main{padding:22px; max-width:1200px; margin:0 auto;}
     section{margin-bottom:28px}
-    .section-head{
-      display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;
-    }
+    .section-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
     .section-head h2{margin:0; font-size:20px; letter-spacing:.2px}
     .row{
       display:grid; grid-auto-flow:column; grid-auto-columns: 220px;
@@ -97,9 +83,7 @@
     .content{padding:12px; display:flex; flex-direction:column; gap:8px}
     .title{font-weight:800; line-height:1.3}
     .genres{color:var(--muted); font-size:12px}
-    .desc{
-      color:var(--muted); font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
-    }
+    .desc{ color:var(--muted); font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
     .card .play{
       margin-top:auto; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;
       background:rgba(255,255,255,.03); border-top:1px solid rgba(255,255,255,.06)
@@ -109,6 +93,7 @@
       padding:8px 10px; border-radius:10px; cursor:pointer;
     }
 
+    /* Dialogs */
     dialog{
       width:min(720px, 92vw); background:var(--bg-elev); color:var(--txt); border:1px solid rgba(255,255,255,.12);
       border-radius:20px; box-shadow:0 30px 60px rgba(0,0,0,.45); padding:0; overflow:hidden;
@@ -142,8 +127,7 @@
         ctx.globalAlpha = .12; ctx.fillStyle = '#ffffff';
         for (let i=0;i<size;i+=Math.floor(size/8)){ ctx.fillRect(i,0,1,size); ctx.fillRect(0,i,size,1); }
         ctx.globalAlpha = 1;
-        ctx.fillStyle = '#07121d'; // bee body circle
-        ctx.beginPath(); ctx.arc(size*0.5, size*0.5, size*0.26, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#07121d'; ctx.beginPath(); ctx.arc(size*0.5, size*0.5, size*0.26, 0, Math.PI*2); ctx.fill();
         ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(size*0.5, size*0.5, size*0.09, 0, Math.PI*2); ctx.fill();
         return c.toDataURL('image/png');
       };
@@ -198,7 +182,7 @@
     <section id="genresContainer"></section>
   </main>
 
-  <!-- Game Modal -->
+  <!-- Game Details Modal -->
   <dialog id="gameModal">
     <div class="modal-head">
       <div style="width:140px; aspect-ratio:16/9; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.08)">
@@ -224,78 +208,180 @@
     </div>
   </dialog>
 
+  <!-- Install Gate Modal -->
+  <dialog id="installGate">
+    <div class="modal-head" style="align-items:center">
+      <div class="logo" aria-hidden="true" style="width:48px;height:48px">🐝</div>
+      <div style="display:flex;flex-direction:column;gap:4px">
+        <h3 style="margin:0">Install Buzzy Games Launcher</h3>
+        <div style="color:var(--muted);font-size:14px">You need to install the app before playing games.</div>
+      </div>
+      <button class="x" onclick="closeInstallGate()" title="Close">&times;</button>
+    </div>
+    <div class="modal-body" id="installTips" style="color:var(--muted)"></div>
+    <div class="modal-actions">
+      <button class="ghost-btn" onclick="closeInstallGate()">Close</button>
+      <button class="btn" id="installNowBtn">Install now</button>
+    </div>
+  </dialog>
+
   <script>
     const $ = (sel, el=document) => el.querySelector(sel);
     const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
 
-    // ---- Your catalog ----
-    // Each entry supports: id (optional), title, url, image (cover), description, genres[], release (YYYY-MM-DD)
+    // ---- Catalog (title, url, image, description, genres, release) ----
     const catalog = [
-      {
-        title:'2048 Classic',
-        url:'https://play2048.co',
+      { title:'2048 Classic', url:'https://play2048.co',
         image:'https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=1200&auto=format&fit=crop',
         description:'Slide tiles to combine numbers and reach 2048.',
-        genres:['Puzzle','Casual'],
-        release:'2025-06-01'
-      },
-      {
-        title:'Wordle (NYT)',
-        url:'https://www.nytimes.com/games/wordle/index.html',
+        genres:['Puzzle','Casual'], release:'2025-06-01' },
+      { title:'Wordle (NYT)', url:'https://www.nytimes.com/games/wordle/index.html',
         image:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop',
         description:'Guess the five-letter word in six tries.',
-        genres:['Puzzle','Casual'],
-        release:'2025-05-10'
-      },
-      {
-        title:'Lichess',
-        url:'https://lichess.org',
+        genres:['Puzzle','Casual'], release:'2025-05-10' },
+      { title:'Lichess', url:'https://lichess.org',
         image:'https://images.unsplash.com/photo-1542654071-7ded220be4b0?q=80&w=1200&auto=format&fit=crop',
         description:'Free online chess with puzzles, analysis, and variants.',
-        genres:['Strategy','Board'],
-        release:'2025-04-12'
-      },
-      {
-        title:'React Tetris',
-        url:'https://chvin.github.io/react-tetris/',
+        genres:['Strategy','Board'], release:'2025-04-12' },
+      { title:'React Tetris', url:'https://chvin.github.io/react-tetris/',
         image:'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop',
         description:'A modern web take on the timeless classic.',
-        genres:['Arcade','Classic'],
-        release:'2025-03-28'
-      },
-      {
-        title:'Slope',
-        url:'https://kazioo.github.io/slope/',
+        genres:['Arcade','Classic'], release:'2025-03-28' },
+      { title:'Slope', url:'https://kazioo.github.io/slope/',
         image:'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1200&auto=format&fit=crop',
         description:'High-speed downhill reflex challenge with neon vibes.',
-        genres:['Action','Arcade'],
-        release:'2025-07-21'
-      },
-      {
-        title:'Celeste Classic 2',
-        url:'https://mattmakesgames.itch.io/celeste-classic-2',
+        genres:['Action','Arcade'], release:'2025-07-21' },
+      { title:'Celeste Classic 2', url:'https://mattmakesgames.itch.io/celeste-classic-2',
         image:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop',
         description:'A charming, challenging pico-8 platformer sequel.',
-        genres:['Platformer','Indie'],
-        release:'2025-02-14'
-      },
-      {
-        title:'Sudoku',
-        url:'https://sudokukingdom.com/',
+        genres:['Platformer','Indie'], release:'2025-02-14' },
+      { title:'Sudoku', url:'https://sudokukingdom.com/',
         image:'https://images.unsplash.com/photo-1605459345580-30f0d7a7f756?q=80&w=1200&auto=format&fit=crop',
         description:'Clean, daily sudoku with multiple difficulties.',
-        genres:['Puzzle','Board'],
-        release:'2025-01-20'
-      },
-      {
-        title:'World’s Hardest Game',
-        url:'https://snoaleen.github.io/whg/',
+        genres:['Puzzle','Board'], release:'2025-01-20' },
+      { title:'World’s Hardest Game', url:'https://snoaleen.github.io/whg/',
         image:'https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=1200&auto=format&fit=crop',
         description:'Dodge your way through brutal mazes.',
-        genres:['Action','Classic'],
-        release:'2025-05-30'
-      }
+        genres:['Action','Classic'], release:'2025-05-30' },
     ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
+
+    // ---- Install gating ----
+    const LS_KEY = 'buzzy.installed';
+    let deferredPrompt = null;
+    function isInstalled() {
+      return window.matchMedia('(display-mode: standalone)').matches
+          || window.navigator.standalone === true                 // iOS
+          || document.referrer.startsWith('android-app://')
+          || JSON.parse(localStorage.getItem(LS_KEY) || 'false'); // fallback flag
+    }
+    let installed = isInstalled();
+
+    // Keep UI in sync with install state
+    function setInstalled(v){
+      installed = !!v;
+      localStorage.setItem(LS_KEY, JSON.stringify(installed));
+      $('#installBtn').style.display = installed ? 'none' : '';
+      // Re-render to update any disabled states if needed
+      render();
+    }
+
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+      $('#installBtn').disabled = false;
+    });
+    window.addEventListener('appinstalled', () => setInstalled(true));
+
+    // CTA in header
+    $('#installBtn').onclick = async () => {
+      if (deferredPrompt) {
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') setInstalled(true);
+        deferredPrompt = null;
+      } else {
+        openInstallGate(); // show manual tips if prompt isn't available
+      }
+    };
+
+    // Gate helper
+    function enforceInstallOr(action){
+      if (installed) { action(); return; }
+      openInstallGate();
+    }
+
+    // ---- Install Gate Modal ----
+    function platformTipsHtml(){
+      const ua = navigator.userAgent.toLowerCase();
+      const isIOS = /iphone|ipad|ipod/.test(ua);
+      const isAndroid = /android/.test(ua);
+      if (isIOS) {
+        return `
+          <ol style="margin:0;padding-left:18px;line-height:1.6">
+            <li>Tap the <b>Share</b> icon in Safari.</li>
+            <li>Choose <b>Add to Home Screen</b>.</li>
+            <li>Open <b>Buzzy Games Launcher</b> from your Home Screen and play.</li>
+          </ol>`;
+      } else if (isAndroid) {
+        return `
+          <ol style="margin:0;padding-left:18px;line-height:1.6">
+            <li>Tap the <b>⋮</b> menu in Chrome.</li>
+            <li>Choose <b>Install app</b> (or <b>Add to Home screen</b>).</li>
+            <li>Launch <b>Buzzy Games Launcher</b> and play.</li>
+          </ol>`;
+      } else {
+        return `
+          <ol style="margin:0;padding-left:18px;line-height:1.6">
+            <li>Click the <b>Install</b> icon in your address bar (Chrome/Edge), or open the browser menu.</li>
+            <li>Select <b>Install Buzzy Games Launcher</b>.</li>
+            <li>Open the installed window/app and play.</li>
+          </ol>`;
+      }
+    }
+    function openInstallGate(){
+      $('#installTips').innerHTML = `
+        <div>Install the app to enable game launching:</div>
+        ${platformTipsHtml()}
+      `;
+      $('#installGate').showModal();
+    }
+    function closeInstallGate(){ $('#installGate').close(); }
+    $('#installNowBtn').onclick = async ()=>{
+      if (deferredPrompt){
+        deferredPrompt.prompt();
+        const choice = await deferredPrompt.userChoice;
+        if (choice.outcome === 'accepted') { setInstalled(true); closeInstallGate(); }
+        deferredPrompt = null;
+      } else {
+        // No prompt available; keep tips visible
+      }
+    };
+
+    // ---- Rendering ----
+    const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
+    function cardHTML(g, showNewBadge=false){
+      const genres = (g.genres||[]).slice(0,3).join(' • ');
+      const newBadge = showNewBadge ? `<div class="badge">NEW</div>` : '';
+      return `
+      <article class="card" data-id="${g.id}">
+        <div class="cover">
+          <img alt="${escapeHtml(g.title)} cover" src="${g.image || ''}" onerror="this.src='${makeCoverFallback(g.title)}'" loading="lazy"/>
+          ${newBadge}
+        </div>
+        <div class="content">
+          <div class="title">${escapeHtml(g.title)}</div>
+          <div class="genres">${escapeHtml(genres)}</div>
+          <div class="desc">${escapeHtml(g.description||'')}</div>
+        </div>
+        <div class="play">
+          <span style="color:var(--muted); font-size:12px">${installed ? 'Open' : 'Install required'}</span>
+          <div style="display:flex; gap:8px">
+            <button class="ghost-btn" data-open="${g.id}">Details</button>
+            <button class="ghost-btn" data-quickplay="${g.id}" ${installed?'':'title="Install the app to play"'}>Play</button>
+          </div>
+        </div>
+      </article>`;
+    }
 
     function makeCoverFallback(title){
       const colors = [
@@ -320,62 +406,33 @@
         </svg>`;
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
     }
-    const resolveImage = (g) => g.image || makeCoverFallback(g.title);
-    const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
 
-    // ----------------------- Rendering -----------------------
     function render(){
       const q = $('#searchInput').value.trim().toLowerCase();
       const all = catalog.filter(g => !q || [g.title, ...(g.genres||[]), (g.description||'')].join(' ')
         .toLowerCase().includes(q));
 
-      // New & Noteworthy
       const byDate = [...all].sort((a,b)=> new Date(b.release||0) - new Date(a.release||0));
       $('#newRow').innerHTML = byDate.slice(0,10).map(g=>cardHTML(g,true)).join('');
 
       // Genre sections
       const genres = Array.from(new Set(all.flatMap(g=>g.genres||[]))).sort();
-      const container = $('#genresContainer');
-      container.innerHTML = '';
+      const container = $('#genresContainer'); container.innerHTML = '';
       genres.forEach(genre=>{
         const items = all.filter(g=> (g.genres||[]).includes(genre));
         if(!items.length) return;
         const sec = document.createElement('div');
         sec.className = 'genre-sec';
         sec.innerHTML = `
-          <div class="section-head">
-            <h2>${genre}</h2>
-          </div>
+          <div class="section-head"><h2>${genre}</h2></div>
           <div class="row">${items.map(cardHTML).join('')}</div>
         `;
         container.appendChild(sec);
       });
 
       attachCardEvents();
-    }
-
-    function cardHTML(g, showNewBadge=false){
-      const genres = (g.genres||[]).slice(0,3).join(' • ');
-      const newBadge = showNewBadge ? `<div class="badge">NEW</div>` : '';
-      return `
-      <article class="card" data-id="${g.id}">
-        <div class="cover">
-          <img alt="${escapeHtml(g.title)} cover" src="${resolveImage(g)}" loading="lazy"/>
-          ${newBadge}
-        </div>
-        <div class="content">
-          <div class="title">${escapeHtml(g.title)}</div>
-          <div class="genres">${escapeHtml(genres)}</div>
-          <div class="desc">${escapeHtml(g.description||'')}</div>
-        </div>
-        <div class="play">
-          <span style="color:var(--muted); font-size:12px">Open</span>
-          <div style="display:flex; gap:8px">
-            <button class="ghost-btn" data-open="${g.id}">Details</button>
-            <button class="ghost-btn" data-quickplay="${g.id}">Play</button>
-          </div>
-        </div>
-      </article>`;
+      // Header Install button visibility
+      $('#installBtn').style.display = installed ? 'none' : '';
     }
 
     function attachCardEvents(){
@@ -383,20 +440,23 @@
         btn.onclick = () => openGameModal(btn.getAttribute('data-open'));
       });
       $$('.card [data-quickplay]').forEach(btn=>{
-        btn.onclick = () => quickPlay(btn.getAttribute('data-quickplay'));
+        btn.onclick = () => {
+          const id = btn.getAttribute('data-quickplay');
+          enforceInstallOr(()=> quickPlay(id));
+        };
       });
     }
 
-    // ----------------------- Modal -----------------------
+    // ---- Modal ----
     function openGameModal(id){
       const g = catalog.find(x=>x.id===id); if(!g) return;
-      $('#modalCover').src = resolveImage(g);
+      $('#modalCover').src = g.image || makeCoverFallback(g.title);
       $('#modalTitle').textContent = g.title;
       $('#modalGenres').textContent = (g.genres||[]).join(' • ') || '—';
       $('#modalRelease').textContent = `Released ${g.release || '—'}`;
       try{ $('#modalUrl').textContent = new URL(g.url).host; }catch{ $('#modalUrl').textContent = g.url; }
       $('#modalDesc').textContent = g.description || 'No description yet.';
-      $('#playBtn').onclick = () => window.open(g.url, '_blank', 'noopener,noreferrer');
+      $('#playBtn').onclick = () => enforceInstallOr(()=> window.open(g.url, '_blank', 'noopener,noreferrer'));
       $('#gameModal').showModal();
     }
     function closeModal(){ $('#gameModal').close(); }
@@ -405,27 +465,15 @@
       window.open(g.url, '_blank', 'noopener,noreferrer');
     }
 
-    // ----------------------- PWA Install -----------------------
-    let deferredPrompt = null;
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      $('#installBtn').disabled = false;
-    });
-    $('#installBtn').onclick = async () => {
-      if(!deferredPrompt){ alert('If your browser supports it, the install prompt will appear when ready.'); return; }
-      deferredPrompt.prompt();
-      await deferredPrompt.userChoice;
-      deferredPrompt = null;
-    };
-
-    // ----------------------- Service Worker -----------------------
+    // ---- PWA SW ----
     if('serviceWorker' in navigator){
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(console.warn);
       });
     }
 
+    // ---- Search and init ----
+    $('#searchInput').addEventListener('input', render);
     render();
   </script>
 </body>
