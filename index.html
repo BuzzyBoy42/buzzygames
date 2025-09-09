@@ -4,10 +4,9 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta name="theme-color" content="#0b0f14" />
-  <title>Nebula Launcher</title>
-  <meta name="description" content="A sleek PWA game launcher with a Steam-like catalog." />
+  <title>Buzzy Games Launcher</title>
+  <meta name="description" content="A sleek, Steam-style PWA game launcher with a modern catalog UI." />
 
-  <!-- App shell styles -->
   <style>
     :root{
       --bg:#0b0f14;
@@ -15,7 +14,7 @@
       --bg-elev-2:#152033;
       --txt:#e6ebf5;
       --muted:#aab6ca;
-      --accent:#5ac8fa;
+      --accent:#fbbf24; /* honey */
       --accent-2:#8b5cf6;
       --chip:#1a2841;
       --card:#111a2b;
@@ -44,56 +43,38 @@
       border-bottom: 1px solid rgba(255,255,255,.06);
     }
     .brand{
-      display:flex; align-items:center; gap:10px; font-weight:700; letter-spacing:.3px;
+      display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px;
     }
     .logo{
       width:36px; height:36px; display:grid; place-items:center; border-radius:10px;
       background: linear-gradient(140deg, var(--accent), var(--accent-2));
-      box-shadow: 0 6px 16px rgba(90,200,250,.35);
+      box-shadow: 0 6px 16px rgba(251,191,36,.35);
       font-weight:900;
     }
-    .nav{
-      display:flex; gap:8px; margin-left:8px;
-    }
-    .nav button{
-      background: transparent; color: var(--muted);
-      border: 1px solid rgba(255,255,255,.08);
-      padding:8px 12px; border-radius:12px; cursor:pointer;
-    }
-    .nav button.active{ color:var(--txt); border-color: rgba(255,255,255,.18); background:var(--glass)}
     .grow{flex:1}
     .search{
       display:flex; align-items:center; gap:8px; background:var(--bg-elev); border:1px solid rgba(255,255,255,.08);
-      padding:8px 12px; border-radius:12px; width:min(440px, 50vw);
+      padding:8px 12px; border-radius:12px; width:min(480px, 55vw);
     }
-    .search input{
-      flex:1; border:none; background:transparent; color:var(--txt); outline:none; font-size:14px;
-    }
-    .actions{display:flex; gap:8px}
+    .search input{ flex:1; border:none; background:transparent; color:var(--txt); outline:none; font-size:14px; }
     .btn{
       background:linear-gradient(140deg, var(--accent), var(--accent-2));
       border:none; color:#08121f; font-weight:700; padding:10px 14px; border-radius:12px; cursor:pointer;
-      box-shadow:0 6px 16px rgba(90,200,250,.35);
+      box-shadow:0 6px 16px rgba(251,191,36,.35);
     }
     .btn.secondary{
       background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12);
       box-shadow:none;
     }
 
-    /* Layout */
     main{padding:22px; max-width:1200px; margin:0 auto;}
     section{margin-bottom:28px}
     .section-head{
       display:flex; align-items:center; justify-content:space-between; margin-bottom:12px;
     }
     .section-head h2{margin:0; font-size:20px; letter-spacing:.2px}
-    .section-head .chips{display:flex; gap:8px; flex-wrap:wrap}
-    .chip{
-      background:var(--chip); color:#d4def1; padding:6px 10px; border-radius:999px; font-size:12px;
-      border:1px solid rgba(255,255,255,.08); cursor:pointer;
-    }
     .row{
-      display:grid; grid-auto-flow:column; grid-auto-columns: 200px;
+      display:grid; grid-auto-flow:column; grid-auto-columns: 220px;
       gap:14px; overflow-x:auto; padding-bottom:8px; scroll-snap-type:x mandatory;
     }
     .row::-webkit-scrollbar{height:10px}
@@ -104,11 +85,9 @@
       background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
       border:1px solid rgba(255,255,255,.08);
       border-radius:var(--radius); overflow:hidden; position:relative; box-shadow: var(--shadow);
-      display:flex; flex-direction:column; min-height:270px;
+      display:flex; flex-direction:column; min-height:300px;
     }
-    .cover{
-      aspect-ratio:16/9; width:100%; background:#0e1626; position:relative; overflow:hidden;
-    }
+    .cover{ aspect-ratio:16/9; width:100%; background:#0e1626; position:relative; overflow:hidden; }
     .cover img{width:100%; height:100%; object-fit:cover; display:block}
     .badge{
       position:absolute; top:10px; left:10px;
@@ -116,8 +95,11 @@
       padding:6px 10px; border-radius:999px; font-size:11px; border:1px solid rgba(0,0,0,.1)
     }
     .content{padding:12px; display:flex; flex-direction:column; gap:8px}
-    .title{font-weight:700; line-height:1.3}
+    .title{font-weight:800; line-height:1.3}
     .genres{color:var(--muted); font-size:12px}
+    .desc{
+      color:var(--muted); font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden;
+    }
     .card .play{
       margin-top:auto; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;
       background:rgba(255,255,255,.03); border-top:1px solid rgba(255,255,255,.06)
@@ -127,7 +109,6 @@
       padding:8px 10px; border-radius:10px; cursor:pointer;
     }
 
-    /* Modal */
     dialog{
       width:min(720px, 92vw); background:var(--bg-elev); color:var(--txt); border:1px solid rgba(255,255,255,.12);
       border-radius:20px; box-shadow:0 30px 60px rgba(0,0,0,.45); padding:0; overflow:hidden;
@@ -143,48 +124,32 @@
     .meta{display:flex; gap:8px; flex-wrap:wrap}
     .x{margin-left:auto; background:transparent; border:none; color:var(--muted); font-size:22px; cursor:pointer}
 
-    /* Empty states */
-    .empty{
-      text-align:center; padding:40px 16px; color:var(--muted);
-      border:1px dashed rgba(255,255,255,.12); border-radius:16px; background:rgba(255,255,255,.02)
-    }
-
-    /* Responsive tweaks */
     @media (max-width:720px){
       .search{width:auto}
-      .row{grid-auto-columns: 72%}
+      .row{grid-auto-columns: 78%}
     }
   </style>
 
   <script>
-    // ---- Dynamic manifest with generated PNG icons (no extra file needed) ----
+    // ---- Dynamic manifest (no extra file needed) ----
     (function setupDynamicManifest(){
       const makeIcon = (size) => {
         const c = document.createElement('canvas'); c.width = c.height = size;
         const ctx = c.getContext('2d');
         const g = ctx.createLinearGradient(0,0,size,size);
-        g.addColorStop(0,'#5ac8fa'); g.addColorStop(1,'#8b5cf6');
+        g.addColorStop(0,'#fbbf24'); g.addColorStop(1,'#8b5cf6');
         ctx.fillStyle = g; ctx.fillRect(0,0,size,size);
-        // Subtle sparkle grid
         ctx.globalAlpha = .12; ctx.fillStyle = '#ffffff';
-        for (let i=0;i<size;i+=Math.floor(size/8)){
-          ctx.fillRect(i,0,1,size); ctx.fillRect(0,i,size,1);
-        }
+        for (let i=0;i<size;i+=Math.floor(size/8)){ ctx.fillRect(i,0,1,size); ctx.fillRect(0,i,size,1); }
         ctx.globalAlpha = 1;
-        // Logo glyph
-        ctx.fillStyle = '#07121d';
-        ctx.beginPath();
-        const r = size*0.26;
-        ctx.arc(size*0.5, size*0.5, r, 0, Math.PI*2);
-        ctx.fill();
-        // Inner dot
-        ctx.fillStyle = '#5ac8fa';
-        ctx.beginPath(); ctx.arc(size*0.5, size*0.5, r*0.35, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#07121d'; // bee body circle
+        ctx.beginPath(); ctx.arc(size*0.5, size*0.5, size*0.26, 0, Math.PI*2); ctx.fill();
+        ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(size*0.5, size*0.5, size*0.09, 0, Math.PI*2); ctx.fill();
         return c.toDataURL('image/png');
       };
       const manifest = {
-        name: "Nebula Launcher",
-        short_name: "Nebula",
+        name: "Buzzy Games Launcher",
+        short_name: "Buzzy Games",
         start_url: ".",
         display: "standalone",
         background_color: "#0b0f14",
@@ -205,14 +170,9 @@
 <body>
   <header class="topbar">
     <div class="brand">
-      <div class="logo">◎</div>
-      <div>Nebula Launcher</div>
+      <div class="logo">🐝</div>
+      <div>Buzzy Games Launcher</div>
     </div>
-
-    <nav class="nav">
-      <button class="active" data-view="discover">Discover</button>
-      <button data-view="library">Library</button>
-    </nav>
 
     <div class="grow"></div>
 
@@ -223,38 +183,19 @@
       <input id="searchInput" placeholder="Search games…" />
     </div>
 
-    <div class="actions">
-      <button class="btn secondary" id="addGameBtn">Add Game</button>
-      <button class="btn" id="installBtn">Install App</button>
-    </div>
+    <button class="btn" id="installBtn">Install App</button>
   </header>
 
   <main>
-    <!-- Hero / New & Noteworthy -->
     <section id="newSection">
       <div class="section-head">
         <h2>New &amp; Noteworthy</h2>
-        <button class="ghost-btn" id="viewAllNew">View all</button>
+        <div style="opacity:.75;font-size:12px">Fresh picks from the catalog</div>
       </div>
       <div class="row" id="newRow"></div>
     </section>
 
-    <!-- Genre Sections -->
     <section id="genresContainer"></section>
-
-    <!-- Library View -->
-    <section id="librarySection" hidden>
-      <div class="section-head">
-        <h2>Your Library</h2>
-        <div class="chips">
-          <span class="chip" data-lib-filter="all">All</span>
-          <span class="chip" data-lib-filter="favorites">Favorites</span>
-          <span class="chip" data-lib-filter="recent">Recently Played</span>
-        </div>
-      </div>
-      <div id="libraryGrid" class="row"></div>
-      <div class="empty" id="emptyLibrary" hidden>No games yet. Click <b>Add Game</b> to add your first title.</div>
-    </section>
   </main>
 
   <!-- Game Modal -->
@@ -279,116 +220,95 @@
       <div id="modalDesc" style="color:var(--muted)"></div>
     </div>
     <div class="modal-actions">
-      <button class="ghost-btn" id="favoriteBtn">★ Favorite</button>
-      <button class="ghost-btn" id="libraryBtn">＋ Add to Library</button>
       <button class="btn" id="playBtn">Play</button>
     </div>
   </dialog>
 
-  <!-- Add Game Modal -->
-  <dialog id="addGameDialog">
-    <form id="addGameForm" method="dialog" style="display:flex; flex-direction:column; gap:12px; padding:16px">
-      <div style="display:flex; justify-content:space-between; align-items:center; gap:10px">
-        <h3 style="margin:0">Add a Game</h3>
-        <button type="button" class="x" onclick="document.getElementById('addGameDialog').close()">&times;</button>
-      </div>
-      <div style="display:grid; gap:8px">
-        <label>Title <input required name="title" style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.2); background:var(--bg-elev); color:var(--txt)"></label>
-        <label>Launch URL <input required name="url" placeholder="https://example.com/game" style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.2); background:var(--bg-elev); color:var(--txt)"></label>
-        <label>Genres (comma separated) <input name="genres" placeholder="Action, Strategy" style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.2); background:var(--bg-elev); color:var(--txt)"></label>
-        <label>Description <textarea name="description" rows="3" style="width:100%; padding:10px; border-radius:10px; border:1px solid rgba(255,255,255,.2); background:var(--bg-elev); color:var(--txt)"></textarea></label>
-      </div>
-      <div style="display:flex; justify-content:flex-end; gap:10px">
-        <button type="button" class="ghost-btn" onclick="document.getElementById('addGameDialog').close()">Cancel</button>
-        <button class="btn">Save</button>
-      </div>
-    </form>
-  </dialog>
-
   <script>
-    // ----------------------- Data & Utils -----------------------
     const $ = (sel, el=document) => el.querySelector(sel);
     const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
-    const STORAGE_KEYS = {
-      LIB:'nebula.library',
-      FAV:'nebula.favorites',
-      PLAY:'nebula.played',
-    };
 
-    const defaultGames = [
+    // ---- Your catalog ----
+    // Each entry supports: id (optional), title, url, image (cover), description, genres[], release (YYYY-MM-DD)
+    const catalog = [
       {
-        id:'2048', title:'2048 Classic',
+        title:'2048 Classic',
         url:'https://play2048.co',
-        genres:['Puzzle','Casual'],
-        release:'2025-06-01',
+        image:'https://images.unsplash.com/photo-1535016120720-40c646be5580?q=80&w=1200&auto=format&fit=crop',
         description:'Slide tiles to combine numbers and reach 2048.',
-      },
-      {
-        id:'wordle', title:'Wordle (NYT)',
-        url:'https://www.nytimes.com/games/wordle/index.html',
         genres:['Puzzle','Casual'],
-        release:'2025-05-10',
+        release:'2025-06-01'
+      },
+      {
+        title:'Wordle (NYT)',
+        url:'https://www.nytimes.com/games/wordle/index.html',
+        image:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop',
         description:'Guess the five-letter word in six tries.',
+        genres:['Puzzle','Casual'],
+        release:'2025-05-10'
       },
       {
-        id:'slope', title:'Slope',
-        url:'https://kazioo.github.io/slope/',
-        genres:['Action','Arcade'],
-        release:'2025-07-21',
-        description:'High-speed downhill arcade reflex challenge.',
-      },
-      {
-        id:'chess', title:'Lichess',
+        title:'Lichess',
         url:'https://lichess.org',
+        image:'https://images.unsplash.com/photo-1542654071-7ded220be4b0?q=80&w=1200&auto=format&fit=crop',
+        description:'Free online chess with puzzles, analysis, and variants.',
         genres:['Strategy','Board'],
-        release:'2025-04-12',
-        description:'Free online chess with puzzles & analysis.',
+        release:'2025-04-12'
       },
       {
-        id:'tetris', title:'Tetris JS',
+        title:'React Tetris',
         url:'https://chvin.github.io/react-tetris/',
-        genres:['Arcade','Classic'],
-        release:'2025-03-28',
+        image:'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop',
         description:'A modern web take on the timeless classic.',
+        genres:['Arcade','Classic'],
+        release:'2025-03-28'
       },
       {
-        id:'whg', title:'World’s Hardest Game',
-        url:'https://snoaleen.github.io/whg/',
-        genres:['Action','Classic'],
-        release:'2025-05-30',
-        description:'Dodge your way through brutal mazes.',
+        title:'Slope',
+        url:'https://kazioo.github.io/slope/',
+        image:'https://images.unsplash.com/photo-1496307042754-b4aa456c4a2d?q=80&w=1200&auto=format&fit=crop',
+        description:'High-speed downhill reflex challenge with neon vibes.',
+        genres:['Action','Arcade'],
+        release:'2025-07-21'
       },
       {
-        id:'celeste', title:'Celeste Classic 2',
+        title:'Celeste Classic 2',
         url:'https://mattmakesgames.itch.io/celeste-classic-2',
-        genres:['Platformer','Indie'],
-        release:'2025-02-14',
+        image:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop',
         description:'A charming, challenging pico-8 platformer sequel.',
+        genres:['Platformer','Indie'],
+        release:'2025-02-14'
       },
       {
-        id:'sudoku', title:'Sudoku',
+        title:'Sudoku',
         url:'https://sudokukingdom.com/',
-        genres:['Puzzle','Board'],
-        release:'2025-01-20',
+        image:'https://images.unsplash.com/photo-1605459345580-30f0d7a7f756?q=80&w=1200&auto=format&fit=crop',
         description:'Clean, daily sudoku with multiple difficulties.',
+        genres:['Puzzle','Board'],
+        release:'2025-01-20'
       },
-    ].map(g=>({...g, cover: makeCover(g.title)}));
+      {
+        title:'World’s Hardest Game',
+        url:'https://snoaleen.github.io/whg/',
+        image:'https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=1200&auto=format&fit=crop',
+        description:'Dodge your way through brutal mazes.',
+        genres:['Action','Classic'],
+        release:'2025-05-30'
+      }
+    ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
 
-    function makeCover(title){
-      // Generate an SVG cover with gradient & title, then encode as data URL
+    function makeCoverFallback(title){
       const colors = [
-        ['#5ac8fa','#8b5cf6'], ['#22d3ee','#06b6d4'],
+        ['#fbbf24','#8b5cf6'], ['#22d3ee','#06b6d4'],
         ['#34d399','#10b981'], ['#f472b6','#60a5fa'],
         ['#f59e0b','#f43f5e'], ['#a78bfa','#60a5fa'],
       ];
       const [c1,c2] = colors[Math.floor(Math.random()*colors.length)];
       const svg =
         `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='675'>
-          <defs>
-            <linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-              <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/>
-            </linearGradient>
-          </defs>
+          <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
+            <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/>
+          </linearGradient></defs>
           <rect width='100%' height='100%' fill='url(#g)'/>
           <g fill='white' opacity='.12'>
             <circle cx='200' cy='120' r='90'/><circle cx='1050' cy='540' r='120'/>
@@ -400,40 +320,20 @@
         </svg>`;
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
     }
-
-    const db = {
-      get library(){ return JSON.parse(localStorage.getItem(STORAGE_KEYS.LIB) || '[]'); },
-      set library(v){ localStorage.setItem(STORAGE_KEYS.LIB, JSON.stringify(v)); },
-      get favorites(){ return new Set(JSON.parse(localStorage.getItem(STORAGE_KEYS.FAV) || '[]')); },
-      set favorites(set){ localStorage.setItem(STORAGE_KEYS.FAV, JSON.stringify(Array.from(set))); },
-      markPlayed(id){
-        const dict = JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAY) || '{}');
-        dict[id] = Date.now();
-        localStorage.setItem(STORAGE_KEYS.PLAY, JSON.stringify(dict));
-      },
-      getPlayed(){ return JSON.parse(localStorage.getItem(STORAGE_KEYS.PLAY) || '{}'); }
-    };
-
-    // Merge defaults into library (without duplicating)
-    (function seedLibrary(){
-      const lib = db.library;
-      const ids = new Set(lib.map(g=>g.id));
-      const merged = [...lib];
-      defaultGames.forEach(g=>{ if(!ids.has(g.id)) merged.push(g); });
-      db.library = merged;
-    })();
+    const resolveImage = (g) => g.image || makeCoverFallback(g.title);
+    const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
 
     // ----------------------- Rendering -----------------------
     function render(){
       const q = $('#searchInput').value.trim().toLowerCase();
-      const all = db.library.filter(g => !q || [g.title, ...(g.genres||[]), (g.description||'')].join(' ')
+      const all = catalog.filter(g => !q || [g.title, ...(g.genres||[]), (g.description||'')].join(' ')
         .toLowerCase().includes(q));
 
-      // New & Noteworthy: most recent 10 by release date
+      // New & Noteworthy
       const byDate = [...all].sort((a,b)=> new Date(b.release||0) - new Date(a.release||0));
-      $('#newRow').innerHTML = byDate.slice(0,10).map(g=>cardHTML(g, true)).join('');
+      $('#newRow').innerHTML = byDate.slice(0,10).map(g=>cardHTML(g,true)).join('');
 
-      // Genres
+      // Genre sections
       const genres = Array.from(new Set(all.flatMap(g=>g.genres||[]))).sort();
       const container = $('#genresContainer');
       container.innerHTML = '';
@@ -445,15 +345,12 @@
         sec.innerHTML = `
           <div class="section-head">
             <h2>${genre}</h2>
-            <button class="ghost-btn" data-view-genre="${genre}">View all</button>
           </div>
           <div class="row">${items.map(cardHTML).join('')}</div>
         `;
         container.appendChild(sec);
       });
 
-      // Library view
-      renderLibrary();
       attachCardEvents();
     }
 
@@ -463,15 +360,16 @@
       return `
       <article class="card" data-id="${g.id}">
         <div class="cover">
-          <img alt="${escapeHtml(g.title)} cover" src="${g.cover}" loading="lazy"/>
+          <img alt="${escapeHtml(g.title)} cover" src="${resolveImage(g)}" loading="lazy"/>
           ${newBadge}
         </div>
         <div class="content">
           <div class="title">${escapeHtml(g.title)}</div>
           <div class="genres">${escapeHtml(genres)}</div>
+          <div class="desc">${escapeHtml(g.description||'')}</div>
         </div>
         <div class="play">
-          <span style="color:var(--muted); font-size:12px">Quick actions</span>
+          <span style="color:var(--muted); font-size:12px">Open</span>
           <div style="display:flex; gap:8px">
             <button class="ghost-btn" data-open="${g.id}">Details</button>
             <button class="ghost-btn" data-quickplay="${g.id}">Play</button>
@@ -480,119 +378,32 @@
       </article>`;
     }
 
-    function renderLibrary(filter='all'){
-      const favs = db.favorites;
-      const played = db.getPlayed();
-      let items = db.library;
-
-      if(filter==='favorites') items = items.filter(g=>favs.has(g.id));
-      if(filter==='recent'){
-        items = items.filter(g=>played[g.id]).sort((a,b)=> (played[b.id]||0)-(played[a.id]||0));
-      }
-      $('#libraryGrid').innerHTML = items.map(cardHTML).join('');
-      $('#emptyLibrary').hidden = items.length !== 0;
-    }
-
     function attachCardEvents(){
-      // Details & Quick Play
       $$('.card [data-open]').forEach(btn=>{
         btn.onclick = () => openGameModal(btn.getAttribute('data-open'));
       });
       $$('.card [data-quickplay]').forEach(btn=>{
         btn.onclick = () => quickPlay(btn.getAttribute('data-quickplay'));
       });
-      // View-all by genre
-      $$('[data-view-genre]').forEach(b=>{
-        b.onclick = () => {
-          switchView('library');
-          $('#searchInput').value = b.getAttribute('data-view-genre');
-          render();
-        };
-      });
     }
 
-    function escapeHtml(s){ return s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || ''; }
-
-    // ----------------------- Modal & Actions -----------------------
+    // ----------------------- Modal -----------------------
     function openGameModal(id){
-      const g = db.library.find(x=>x.id===id); if(!g) return;
-      $('#modalCover').src = g.cover;
+      const g = catalog.find(x=>x.id===id); if(!g) return;
+      $('#modalCover').src = resolveImage(g);
       $('#modalTitle').textContent = g.title;
       $('#modalGenres').textContent = (g.genres||[]).join(' • ') || '—';
       $('#modalRelease').textContent = `Released ${g.release || '—'}`;
-      $('#modalUrl').textContent = new URL(g.url).host;
+      try{ $('#modalUrl').textContent = new URL(g.url).host; }catch{ $('#modalUrl').textContent = g.url; }
       $('#modalDesc').textContent = g.description || 'No description yet.';
-      $('#favoriteBtn').onclick = () => toggleFavorite(g.id);
-      $('#libraryBtn').onclick = () => addToLibrary(g);
-      $('#playBtn').onclick = () => {
-        db.markPlayed(g.id);
-        window.open(g.url, '_blank', 'noopener,noreferrer');
-      };
+      $('#playBtn').onclick = () => window.open(g.url, '_blank', 'noopener,noreferrer');
       $('#gameModal').showModal();
     }
     function closeModal(){ $('#gameModal').close(); }
-
     function quickPlay(id){
-      const g = db.library.find(x=>x.id===id); if(!g) return;
-      db.markPlayed(g.id);
+      const g = catalog.find(x=>x.id===id); if(!g) return;
       window.open(g.url, '_blank', 'noopener,noreferrer');
     }
-    function toggleFavorite(id){
-      const favs = db.favorites;
-      if(favs.has(id)) favs.delete(id); else favs.add(id);
-      db.favorites = favs;
-      closeModal();
-      renderLibrary(currentLibFilter); // refresh badges if you add later
-    }
-    function addToLibrary(g){
-      const lib = db.library;
-      if(!lib.find(x=>x.id===g.id)){
-        db.library = [g, ...lib];
-      }
-      closeModal();
-      switchView('library');
-    }
-
-    // ----------------------- Navigation & Search -----------------------
-    let currentView = 'discover';
-    function switchView(view){
-      currentView = view;
-      $$('.nav button').forEach(b => b.classList.toggle('active', b.dataset.view===view));
-      $('#librarySection').hidden = view!=='library';
-      $('#newSection').hidden = view!=='discover';
-      $('#genresContainer').hidden = view!=='discover';
-    }
-    $('#viewAllNew').onclick = () => { switchView('library'); renderLibrary('recent'); };
-
-    let currentLibFilter = 'all';
-    $$('[data-lib-filter]').forEach(chip=>{
-      chip.onclick = () => { currentLibFilter = chip.getAttribute('data-lib-filter'); renderLibrary(currentLibFilter); };
-    });
-
-    $('#searchInput').addEventListener('input', render);
-    $$('[data-view]').forEach(btn => btn.onclick = () => switchView(btn.dataset.view));
-
-    // ----------------------- Add Game -----------------------
-    $('#addGameBtn').onclick = () => $('#addGameDialog').showModal();
-    $('#addGameForm').addEventListener('submit', (e)=>{
-      e.preventDefault();
-      const fd = new FormData(e.target);
-      const title = String(fd.get('title')||'').trim();
-      const url = String(fd.get('url')||'').trim();
-      const genres = String(fd.get('genres')||'').split(',').map(s=>s.trim()).filter(Boolean);
-      const description = String(fd.get('description')||'').trim();
-      try{
-        const u = new URL(url);
-        if(!(u.protocol==='https:' || u.protocol==='http:')) throw new Error('Invalid URL');
-      }catch{
-        alert('Please enter a valid http(s) URL.'); return;
-      }
-      const id = title.toLowerCase().replace(/[^a-z0-9]+/g,'-').slice(0,40) || ('game-'+Date.now());
-      const game = { id, title, url, genres, description, release: new Date().toISOString().slice(0,10), cover: makeCover(title) };
-      db.library = [game, ...db.library]; // add to front
-      $('#addGameDialog').close();
-      switchView('library'); render();
-    });
 
     // ----------------------- PWA Install -----------------------
     let deferredPrompt = null;
@@ -615,7 +426,6 @@
       });
     }
 
-    // ----------------------- Init -----------------------
     render();
   </script>
 </body>
