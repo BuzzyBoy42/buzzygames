@@ -63,7 +63,7 @@
       position:relative; margin:16px; margin-top:0; border:1px solid rgba(255,255,255,.1);
       border-radius:16px; overflow:hidden; box-shadow: var(--shadow);
       background:#0e1626;
-      height: calc(100vh - 220px - 16px - 64px); /* viewport minus hero and margins & room for controls */
+      height: calc(100vh - 220px - 16px - 64px);
       min-height: 360px;
     }
     .controls{
@@ -71,16 +71,6 @@
     }
     iframe{
       position:absolute; inset:0; width:100%; height:100%; border:0; background:#000;
-    }
-
-    /* Install gate overlay */
-    .gate{
-      position:absolute; inset:0; display:none; align-items:center; justify-content:center; z-index:4;
-      background:rgba(0,0,0,.6); backdrop-filter: blur(4px);
-    }
-    .gate .panel{
-      background:var(--bg-elev); padding:18px; border:1px solid rgba(255,255,255,.12);
-      border-radius:16px; max-width:560px;
     }
 
     /* Empty/error state */
@@ -99,9 +89,7 @@
     <div class="logo" aria-hidden="true">🐝</div>
     <div class="brand">Buzzy Games</div>
     <div class="grow"></div>
-    <button class="icon-btn" id="homeBtn" title="Back to Home">
-      <span>← Home</span>
-    </button>
+    <button class="icon-btn" id="homeBtn" title="Back to Home">← Home</button>
   </header>
 
   <div class="hero" id="hero">
@@ -116,21 +104,7 @@
 
   <div class="frame-wrap" id="frameWrap">
     <div class="controls">
-      
       <button class="icon-btn" id="fullscreenBtn">Fullscreen</button>
-    </div>
-    <div class="gate" id="installGate">
-      <div class="panel">
-        <div style="display:flex; align-items:center; gap:10px; margin-bottom:10px">
-          <div class="logo" style="width:42px;height:42px">🐝</div>
-          <h3 style="margin:0">Install Buzzy Games to play</h3>
-        </div>
-        <div id="tips" style="color:var(--muted); font-size:14px; line-height:1.6; margin-bottom:12px"></div>
-        <div style="display:flex; gap:8px; justify-content:flex-end">
-          <button class="icon-btn" id="closeGate">Close</button>
-          <button class="btn" id="installNow">Install now</button>
-        </div>
-      </div>
     </div>
     <iframe id="gameFrame" allow="fullscreen; gamepad; autoplay; xr-spatial-tracking" referrerpolicy="no-referrer"></iframe>
   </div>
@@ -174,14 +148,12 @@
       eb.hidden = false;
       eb.innerHTML = `<div style="font-weight:700; margin-bottom:6px">Cannot load game</div>
         <div>${msg}</div>
-        <div style="margin-top:10px">Tip: Some sites block embedding in iframes. Try <b>Open in New Tab</b>.</div>`;
+        <div style="margin-top:10px">Tip: Some sites block embedding. If this stays blank, return to the homepage and try a different title.</div>`;
       $('#frameWrap').style.display = 'none';
     }
 
     // --- Back/Home ---
     $('#homeBtn').onclick = () => { location.href = './'; };
-
-   
 
     // --- Fullscreen toggle ---
     const wrap = $('#frameWrap');
@@ -197,74 +169,10 @@
       fsBtn.textContent = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
     });
 
-    // --- Install gate (must install before playing) ---
-    const LS_KEY = 'buzzy.installed';
-    let deferredPrompt = null;
-    function isInstalled(){
-      return window.matchMedia('(display-mode: standalone)').matches
-          || navigator.standalone === true
-          || document.referrer.startsWith('android-app://')
-          || JSON.parse(localStorage.getItem(LS_KEY) || 'false');
-    }
-    function setInstalled(v){
-      localStorage.setItem(LS_KEY, JSON.stringify(!!v));
-      updateGate();
-    }
-    function platformTipsHtml(){
-      const ua = navigator.userAgent.toLowerCase();
-      const isIOS = /iphone|ipad|ipod/.test(ua);
-      const isAndroid = /android/.test(ua);
-      if (isIOS) return `<ol style="margin:0;padding-left:18px">
-          <li>Tap the <b>Share</b> icon in Safari.</li>
-          <li>Choose <b>Add to Home Screen</b>.</li>
-          <li>Open <b>Buzzy Games Launcher</b> from your Home Screen.</li>
-        </ol>`;
-      if (isAndroid) return `<ol style="margin:0;padding-left:18px">
-          <li>Tap the <b>⋮</b> menu in Chrome.</li>
-          <li>Choose <b>Install app</b> (or <b>Add to Home screen</b>).</li>
-          <li>Launch <b>Buzzy Games Launcher</b>.</li>
-        </ol>`;
-      return `<ol style="margin:0;padding-left:18px">
-          <li>Click the <b>Install</b> icon in the address bar (Chrome/Edge) or menu.</li>
-          <li>Select <b>Install Buzzy Games Launcher</b>.</li>
-          <li>Open the installed window/app.</li>
-        </ol>`;
-    }
-    function updateGate(){
-      const gate = $('#installGate');
-      if(isInstalled()){
-        gate.style.display = 'none';
-      }else{
-        $('#tips').innerHTML = platformTipsHtml();
-        gate.style.display = 'flex';
-      }
-    }
-    $('#closeGate').onclick = ()=> $('#installGate').style.display = 'none';
-    $('#installNow').onclick = async ()=>{
-      if (deferredPrompt){
-        deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if(choice.outcome==='accepted'){ setInstalled(true); }
-        deferredPrompt = null;
-      } else {
-        // Show tips; user can follow manual steps
-        alert('Use your browser’s Install/Add to Home Screen option to install Buzzy Games.');
-      }
-    };
-    window.addEventListener('beforeinstallprompt', (e)=>{ e.preventDefault(); deferredPrompt = e; });
-    window.addEventListener('appinstalled', ()=> setInstalled(true));
-
     // Service worker (so the shell loads offline; game content remains online)
     if('serviceWorker' in navigator){
       window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(console.warn));
     }
-
-    // Enforce gate on load
-    updateGate();
-
-    // Heads-up for sites that block iframes:
-    // We can’t reliably detect X-Frame-Options/CSP blocks cross-origin; if the frame stays blank,
-    // the user can click “Open in New Tab”.
   </script>
 </body>
 </html>
