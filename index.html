@@ -276,12 +276,10 @@
     }
     let installed = isInstalled();
 
-    // Keep UI in sync with install state
     function setInstalled(v){
       installed = !!v;
       localStorage.setItem(LS_KEY, JSON.stringify(installed));
       $('#installBtn').style.display = installed ? 'none' : '';
-      // Re-render to update any disabled states if needed
       render();
     }
 
@@ -304,7 +302,6 @@
       }
     };
 
-    // Gate helper
     function enforceInstallOr(action){
       if (installed) { action(); return; }
       openInstallGate();
@@ -353,35 +350,12 @@
         if (choice.outcome === 'accepted') { setInstalled(true); closeInstallGate(); }
         deferredPrompt = null;
       } else {
-        // No prompt available; keep tips visible
+        alert('Use your browser’s Install/Add to Home Screen option to install Buzzy Games.');
       }
     };
 
     // ---- Rendering ----
     const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
-    function cardHTML(g, showNewBadge=false){
-      const genres = (g.genres||[]).slice(0,3).join(' • ');
-      const newBadge = showNewBadge ? `<div class="badge">NEW</div>` : '';
-      return `
-      <article class="card" data-id="${g.id}">
-        <div class="cover">
-          <img alt="${escapeHtml(g.title)} cover" src="${g.image || ''}" onerror="this.src='${makeCoverFallback(g.title)}'" loading="lazy"/>
-          ${newBadge}
-        </div>
-        <div class="content">
-          <div class="title">${escapeHtml(g.title)}</div>
-          <div class="genres">${escapeHtml(genres)}</div>
-          <div class="desc">${escapeHtml(g.description||'')}</div>
-        </div>
-        <div class="play">
-          <span style="color:var(--muted); font-size:12px">${installed ? 'Open' : 'Install required'}</span>
-          <div style="display:flex; gap:8px">
-            <button class="ghost-btn" data-open="${g.id}">Details</button>
-            <button class="ghost-btn" data-quickplay="${g.id}" ${installed?'':'title="Install the app to play"'}>Play</button>
-          </div>
-        </div>
-      </article>`;
-    }
 
     function makeCoverFallback(title){
       const colors = [
@@ -405,6 +379,30 @@
           </text>
         </svg>`;
       return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
+    }
+
+    function cardHTML(g, showNewBadge=false){
+      const genres = (g.genres||[]).slice(0,3).join(' • ');
+      const newBadge = showNewBadge ? `<div class="badge">NEW</div>` : '';
+      return `
+      <article class="card" data-id="${g.id}">
+        <div class="cover">
+          <img alt="${escapeHtml(g.title)} cover" src="${g.image || ''}" onerror="this.src='${makeCoverFallback(g.title)}'" loading="lazy"/>
+          ${newBadge}
+        </div>
+        <div class="content">
+          <div class="title">${escapeHtml(g.title)}</div>
+          <div class="genres">${escapeHtml(genres)}</div>
+          <div class="desc">${escapeHtml(g.description||'')}</div>
+        </div>
+        <div class="play">
+          <span style="color:var(--muted); font-size:12px">${installed ? 'Open' : 'Install required'}</span>
+          <div style="display:flex; gap:8px">
+            <button class="ghost-btn" data-open="${g.id}">Details</button>
+            <button class="ghost-btn" data-quickplay="${g.id}" ${installed?'':'title="Install the app to play"'}>Play</button>
+          </div>
+        </div>
+      </article>`;
     }
 
     function render(){
@@ -456,13 +454,17 @@
       $('#modalRelease').textContent = `Released ${g.release || '—'}`;
       try{ $('#modalUrl').textContent = new URL(g.url).host; }catch{ $('#modalUrl').textContent = g.url; }
       $('#modalDesc').textContent = g.description || 'No description yet.';
-      $('#playBtn').onclick = () => enforceInstallOr(()=> window.open(g.url, '_blank', 'noopener,noreferrer'));
+      $('#playBtn').onclick = () => enforceInstallOr(()=>{
+        const q = new URLSearchParams({ url: g.url, title: g.title, image: g.image || '', desc: g.description || '' });
+        location.href = `./embed.html?${q.toString()}`;
+      });
       $('#gameModal').showModal();
     }
     function closeModal(){ $('#gameModal').close(); }
     function quickPlay(id){
       const g = catalog.find(x=>x.id===id); if(!g) return;
-      window.open(g.url, '_blank', 'noopener,noreferrer');
+      const q = new URLSearchParams({ url: g.url, title: g.title, image: g.image || '', desc: g.description || '' });
+      location.href = `./embed.html?${q.toString()}`;
     }
 
     // ---- PWA SW ----
