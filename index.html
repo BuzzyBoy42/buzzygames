@@ -57,6 +57,17 @@
       box-shadow:0 6px 16px rgba(251,191,36,.35);
     }
     .btn.secondary{ background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12); box-shadow:none; }
+    .btn.small{ padding:8px 12px; border-radius:10px; font-size:13px; }
+
+    /* Install banner (recommended) */
+    .install-banner{
+      display:flex; align-items:center; gap:12px;
+      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
+      border-bottom:1px solid rgba(255,255,255,.08);
+      padding:10px 16px;
+    }
+    .install-banner .note{ color:var(--muted); font-size:14px }
+    .install-banner .actions{ margin-left:auto; display:flex; gap:8px }
 
     main{padding:22px; max-width:1200px; margin:0 auto;}
     section{margin-bottom:28px}
@@ -182,8 +193,17 @@
       <input id="searchInput" placeholder="Search games…" />
     </div>
 
-    <button class="btn" id="installBtn">Install App</button>
+    <button class="btn" id="installBtn" title="Recommended">Install App</button>
   </header>
+
+  <!-- Soft recommendation banner (non-blocking) -->
+  <div class="install-banner" id="installBanner" hidden>
+    <div class="note">For the best experience, <b>install Buzzy Games</b> (recommended).</div>
+    <div class="actions">
+      <button class="btn small" id="bannerInstallBtn">Install</button>
+      <button class="ghost-btn small" id="bannerDismissBtn">Dismiss</button>
+    </div>
+  </div>
 
   <main>
     <section id="newSection">
@@ -220,23 +240,6 @@
     </div>
     <div class="modal-actions">
       <button class="btn" id="playBtn">Play</button>
-    </div>
-  </dialog>
-
-  <!-- Install Gate Modal -->
-  <dialog id="installGate">
-    <div class="modal-head" style="align-items:center">
-      <div class="logo" aria-hidden="true" style="width:48px;height:48px">🐝</div>
-      <div style="display:flex;flex-direction:column;gap:4px">
-        <h3 style="margin:0">Install Buzzy Games Launcher</h3>
-        <div style="color:var(--muted);font-size:14px">You need to install the app before playing games.</div>
-      </div>
-      <button class="x" onclick="closeInstallGate()" title="Close">&times;</button>
-    </div>
-    <div class="modal-body" id="installTips" style="color:var(--muted)"></div>
-    <div class="modal-actions">
-      <button class="ghost-btn" onclick="closeInstallGate()">Close</button>
-      <button class="btn" id="installNowBtn">Install now</button>
     </div>
   </dialog>
 
@@ -280,22 +283,31 @@
         genres:['Action','Classic'], release:'2025-05-30' },
     ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
 
-    // ---- Install gating ----
-    const LS_KEY = 'buzzy.installed';
+    // ---- Install (recommended), but not required ----
+    const LS_INSTALLED = 'buzzy.installed';
+    const LS_BANNER_DISMISSED = 'buzzy.installBannerDismissed';
     let deferredPrompt = null;
+
     function isInstalled() {
       return window.matchMedia('(display-mode: standalone)').matches
-          || window.navigator.standalone === true                 // iOS
+          || window.navigator.standalone === true
           || document.referrer.startsWith('android-app://')
-          || JSON.parse(localStorage.getItem(LS_KEY) || 'false'); // fallback flag
+          || JSON.parse(localStorage.getItem(LS_INSTALLED) || 'false');
     }
     let installed = isInstalled();
 
     function setInstalled(v){
       installed = !!v;
-      localStorage.setItem(LS_KEY, JSON.stringify(installed));
+      localStorage.setItem(LS_INSTALLED, JSON.stringify(installed));
+      updateInstallUI();
+    }
+
+    function updateInstallUI(){
+      // Header Install button visibility
       $('#installBtn').style.display = installed ? 'none' : '';
-      render();
+      // Soft banner (only if not installed and not dismissed)
+      const dismissed = JSON.parse(localStorage.getItem(LS_BANNER_DISMISSED) || 'false');
+      $('#installBanner').hidden = installed || dismissed;
     }
 
     window.addEventListener('beforeinstallprompt', (e) => {
@@ -305,7 +317,7 @@
     });
     window.addEventListener('appinstalled', () => setInstalled(true));
 
-    // CTA in header
+    // Header CTA
     $('#installBtn').onclick = async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -313,61 +325,27 @@
         if (choice.outcome === 'accepted') setInstalled(true);
         deferredPrompt = null;
       } else {
-        openInstallGate(); // show manual tips if prompt isn't available
+        alert(installHelpText());
       }
     };
 
-    function enforceInstallOr(action){
-      if (installed) { action(); return; }
-      openInstallGate();
-    }
+    // Banner CTAs
+    $('#bannerInstallBtn').onclick = () => $('#installBtn').click();
+    $('#bannerDismissBtn').onclick = () => {
+      localStorage.setItem(LS_BANNER_DISMISSED, 'true');
+      updateInstallUI();
+    };
 
-    // ---- Install Gate Modal ----
-    function platformTipsHtml(){
+    function installHelpText(){
       const ua = navigator.userAgent.toLowerCase();
-      const isIOS = /iphone|ipad|ipod/.test(ua);
-      const isAndroid = /android/.test(ua);
-      if (isIOS) {
-        return `
-          <ol style="margin:0;padding-left:18px;line-height:1.6">
-            <li>Tap the <b>Share</b> icon in Safari.</li>
-            <li>Choose <b>Add to Home Screen</b>.</li>
-            <li>Open <b>Buzzy Games Launcher</b> from your Home Screen and play.</li>
-          </ol>`;
-      } else if (isAndroid) {
-        return `
-          <ol style="margin:0;padding-left:18px;line-height:1.6">
-            <li>Tap the <b>⋮</b> menu in Chrome.</li>
-            <li>Choose <b>Install app</b> (or <b>Add to Home screen</b>).</li>
-            <li>Launch <b>Buzzy Games Launcher</b> and play.</li>
-          </ol>`;
+      if (/iphone|ipad|ipod/.test(ua)) {
+        return 'On iPhone/iPad: Share → Add to Home Screen.';
+      } else if (/android/.test(ua)) {
+        return 'On Android Chrome: ⋮ menu → Install app (or Add to Home screen).';
       } else {
-        return `
-          <ol style="margin:0;padding-left:18px;line-height:1.6">
-            <li>Click the <b>Install</b> icon in your address bar (Chrome/Edge), or open the browser menu.</li>
-            <li>Select <b>Install Buzzy Games Launcher</b>.</li>
-            <li>Open the installed window/app and play.</li>
-          </ol>`;
+        return 'On desktop Chrome/Edge: Click the Install icon in the address bar, or use the browser menu.';
       }
     }
-    function openInstallGate(){
-      $('#installTips').innerHTML = `
-        <div>Install the app to enable game launching:</div>
-        ${platformTipsHtml()}
-      `;
-      $('#installGate').showModal();
-    }
-    function closeInstallGate(){ $('#installGate').close(); }
-    $('#installNowBtn').onclick = async ()=>{
-      if (deferredPrompt){
-        deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if (choice.outcome === 'accepted') { setInstalled(true); closeInstallGate(); }
-        deferredPrompt = null;
-      } else {
-        alert('Use your browser’s Install/Add to Home Screen option to install Buzzy Games.');
-      }
-    };
 
     // ---- Rendering ----
     const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
@@ -411,10 +389,10 @@
           <div class="desc">${escapeHtml(g.description||'')}</div>
         </div>
         <div class="play">
-          <span style="color:var(--muted); font-size:12px">${installed ? 'Open' : 'Install required'}</span>
+          <span style="color:var(--muted); font-size:12px">${installed ? 'Open' : 'Open (install recommended)'}</span>
           <div style="display:flex; gap:8px">
             <button class="ghost-btn" data-open="${g.id}">Details</button>
-            <button class="ghost-btn" data-quickplay="${g.id}" ${installed?'':'title="Install the app to play"'}>Play</button>
+            <button class="ghost-btn" data-quickplay="${g.id}">Play</button>
           </div>
         </div>
       </article>`;
@@ -444,7 +422,7 @@
       });
 
       attachCardEvents();
-      $('#installBtn').style.display = installed ? 'none' : '';
+      updateInstallUI();
     }
 
     function attachCardEvents(){
@@ -454,7 +432,7 @@
       $$('.card [data-quickplay]').forEach(btn=>{
         btn.onclick = () => {
           const id = btn.getAttribute('data-quickplay');
-          enforceInstallOr(()=> quickPlay(id));
+          quickPlay(id); // no gate; install is recommended only
         };
       });
     }
@@ -468,10 +446,10 @@
       $('#modalRelease').textContent = `Released ${g.release || '—'}`;
       try{ $('#modalUrl').textContent = new URL(g.url).host; }catch{ $('#modalUrl').textContent = g.url; }
       $('#modalDesc').textContent = g.description || 'No description yet.';
-      $('#playBtn').onclick = () => enforceInstallOr(()=>{
+      $('#playBtn').onclick = () => {
         const q = new URLSearchParams({ url: g.url, title: g.title, image: g.image || '', desc: g.description || '' });
         location.href = `./embed.html?${q.toString()}`;
-      });
+      };
       $('#gameModal').showModal();
     }
     function closeModal(){ $('#gameModal').close(); }
