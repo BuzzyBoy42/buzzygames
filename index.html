@@ -254,40 +254,17 @@
         description:'Slide tiles to combine numbers and reach 2048.',
         genres:['Puzzle','Casual'], release:'2025-09-08' },
       
-      { title:'Wordle (NYT)', url:'https://www.nytimes.com/games/wordle/index.html',
-        image:'https://images.unsplash.com/photo-1517694712202-14dd9538aa97?q=80&w=1200&auto=format&fit=crop',
-        description:'Guess the five-letter word in six tries.',
-        genres:['Puzzle','Casual'], release:'2025-05-10' },
-      
-      { title:'Lichess', url:'https://lichess.org',
-        image:'https://images.unsplash.com/photo-1542654071-7ded220be4b0?q=80&w=1200&auto=format&fit=crop',
-        description:'Free online chess with puzzles, analysis, and variants.',
-        genres:['Strategy','Board'], release:'2025-04-12' },
-      
-      { title:'React Tetris', url:'https://chvin.github.io/react-tetris/',
-        image:'https://images.unsplash.com/photo-1511512578047-dfb367046420?q=80&w=1200&auto=format&fit=crop',
-        description:'A modern web take on the timeless classic.',
-        genres:['Arcade','Classic'], release:'2025-03-28' },
-      
-      { title:'Slope', url:'https://storage.y8.com/y8-studio/unity_webgl/Gani/slope-game_2025_v3/?key=9757549&amp;value=80527',
+      { title:'Slope', url:'https://game-pluto.com/gg/slope/',
         image:'https://th.bing.com/th/id/R.a1698336509a355d218f5f4211f345d0?rik=ae%2ft9J6scxY7ow&pid=ImgRaw&r=0',
         description:'High-speed downhill reflex challenge with neon vibes.',
         genres:['Action','Arcade'], release:'2025-09-08' },
-      
-      { title:'Celeste Classic 2', url:'https://mattmakesgames.itch.io/celeste-classic-2',
-        image:'https://images.unsplash.com/photo-1500530855697-b586d89ba3ee?q=80&w=1200&auto=format&fit=crop',
-        description:'A charming, challenging pico-8 platformer sequel.',
-        genres:['Platformer','Indie'], release:'2025-02-14' },
-      
+ 
       { title:'Sudoku', url:'https://sudokukingdom.com/',
         image:'https://images.unsplash.com/photo-1605459345580-30f0d7a7f756?q=80&w=1200&auto=format&fit=crop',
         description:'Clean, daily sudoku with multiple difficulties.',
         genres:['Puzzle','Board'], release:'2025-01-20' },
       
-      { title:'World’s Hardest Game', url:'https://snoaleen.github.io/whg/',
-        image:'https://images.unsplash.com/photo-1520975916090-3105956dac38?q=80&w=1200&auto=format&fit=crop',
-        description:'Dodge your way through brutal mazes.',
-        genres:['Action','Classic'], release:'2025-05-30' },
+     
     ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
 
     // ---- Install (recommended), but not required ----
