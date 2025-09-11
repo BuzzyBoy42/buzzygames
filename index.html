@@ -248,7 +248,7 @@
     </div>
   </dialog>
 
-  <!-- Update Available Modal -->
+  <!-- Update Available Modal (link-only) -->
   <dialog id="updateDialog">
     <div class="modal-head">
       <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
@@ -257,24 +257,26 @@
       </div>
     </div>
     <div class="modal-body">
-      <div style="color:var(--muted)">A new deployment of <b>Buzzy Games Launcher</b> is available.</div>
+      <div style="color:var(--muted)">
+        A new deployment of <b>Buzzy Games Launcher</b> is available.
+      </div>
       <div class="meta" style="margin-top:6px">
         <span id="updVersion" class="pill">Version –</span>
-        <span id="updSize" class="pill">Size –</span>
         <span id="updSource" class="pill">Source –</span>
       </div>
-      <div id="updNote" style="font-size:13px;color:var(--muted)">
-        Click <b>Download &amp; Replace</b> to save the new ZIP and overwrite your existing copy.
-      </div>
-      <div id="updCompat" style="font-size:12px;color:var(--muted)">
-        Tip: On Chrome/Edge you can overwrite the same file. On Safari/Firefox you'll just download a new ZIP.
+      <div style="font-size:13px;color:var(--muted);line-height:1.5">
+        <ol style="margin:6px 0 0 18px; padding:0">
+          <li>Click <b>Open GitHub</b> to go to the latest release (or the main branch).</li>
+          <li>Click <b>Download ZIP</b>.</li>
+          <li>Replace your old ZIP (or unzip and overwrite your existing files).</li>
+        </ol>
       </div>
       <div id="updStatus" style="font-size:12px;color:var(--muted)"></div>
     </div>
     <div class="modal-actions">
-      <button class="btn" id="updDownloadBtn">Download &amp; Replace</button>
-      <button class="btn secondary" id="updPickBtn" title="Choose a different file to overwrite">Choose File…</button>
-      <button class="ghost-btn" id="updLaterBtn">Later</button>
+      <a class="btn" id="updOpen" href="#" target="_blank" rel="noopener">Open GitHub</a>
+      <a class="btn secondary" id="updZip" href="#" target="_blank" rel="noopener" title="Direct ZIP">Direct ZIP</a>
+      <button class="ghost-btn" id="updDismissBtn" title="Hide until a newer version appears">Dismiss</button>
     </div>
   </dialog>
 
@@ -307,11 +309,6 @@
         description:'Complete levels and drive your way up.',
         genres:['Action','Strategic'], release:'2025-09-08' },
 
-      { title:'Eggy Car', url:'https://webglmath.github.io/eggy-car/',
-        image:'https://eggycar.co/data/image/image.png',
-        description:'Dont let your egg break.',
-        genres:['Action','Strategic'], release:'2025-09-08' },
-      
       { title:'Eggy Car', url:'https://webglmath.github.io/eggy-car/',
         image:'https://eggycar.co/data/image/image.png',
         description:'Dont let your egg break.',
@@ -463,38 +460,38 @@
     }
     function closeModal(){ $('#gameModal').close(); }
 
-    /* ---------------- PWA SW ---------------- */
+    /* ---------------- PWA SW (optional but nice) ---------------- */
     if('serviceWorker' in navigator){
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(console.warn);
       });
     }
 
-    /* ---------------- AUTO-UPDATE (ZIP download & replace) ---------------- */
+    /* ---------------- UPDATE CHECK (link-only popup) ---------------- */
     const GH_REPO = 'BuzzyBoy42/buzzygames';
-    const LS_REV = 'buzzy.revision';
+    const LS_LAST_SEEN_VERSION = 'buzzy.lastSeenVersion';
+    const LS_LAST_PROMPTED_VERSION = 'buzzy.lastPromptedVersion';
     const LS_LAST_CHECK = 'buzzy.revCheckedAt';
-    const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+    const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6h
 
     const toast = $('#updateToast');
     const updDlg = $('#updateDialog');
     const updVersion = $('#updVersion');
-    const updSize = $('#updSize');
-    const updSource = $('#updSource');
-    const updStatus = $('#updStatus');
-    const btnDownload = $('#updDownloadBtn');
-    const btnPick = $('#updPickBtn');
-    const btnClose = $('#updCloseBtn');
-    const btnLater = $('#updLaterBtn');
+    const updSource  = $('#updSource');
+    const updStatus  = $('#updStatus');
+    const btnOpen    = $('#updOpen');
+    const btnZip     = $('#updZip');
+    const btnClose   = $('#updCloseBtn');
+    const btnDismiss = $('#updDismissBtn');
 
     function showToast(msg){ if (toast){ toast.textContent = msg; toast.classList.add('show'); } }
     function hideToast(){ toast?.classList.remove('show'); }
 
-    // (Optional) to avoid rate limits / access private repos, set a token once in DevTools:
+    // Optional: avoid rate limits / access private repos:
     // localStorage.setItem('buzzy.ghToken', 'ghp_...')
-    function ghHeaders(extra={}) {
+    function ghHeaders(extra = {}) {
       const h = { 'Accept': 'application/vnd.github+json', ...extra };
-      const t = (localStorage.getItem('buzzy.ghToken')||'').trim();
+      const t = (localStorage.getItem('buzzy.ghToken') || '').trim();
       if (t) h['Authorization'] = `Bearer ${t}`;
       return h;
     }
@@ -505,19 +502,15 @@
       });
       if (!r.ok) throw new Error(`releases/latest: ${r.status}`);
       const j = await r.json();
-
-      let zipUrl = null, size = 0;
+      const pageUrl = `https://github.com/${GH_REPO}/releases/latest`;
+      // Prefer a zip asset; else use zipball_url
+      let zipUrl = j.zipball_url || pageUrl;
       if (Array.isArray(j.assets) && j.assets.length){
-        const asset = j.assets.find(a => /zip$/i.test(a.browser_download_url)) || j.assets[0];
-        zipUrl = asset.browser_download_url; size = asset.size || 0;
-      } else {
-        zipUrl = j.zipball_url; // redirects to codeload
+        const a = j.assets.find(x => /zip$/i.test(x.browser_download_url)) || j.assets[0];
+        zipUrl = a.browser_download_url || zipUrl;
       }
-      return {
-        source: 'Release',
-        version: j.tag_name || (j.name || '').trim() || (j.published_at || '').slice(0,10),
-        zipUrl, size
-      };
+      const version = j.tag_name || (j.name || '').trim() || (j.published_at || '').slice(0,10);
+      return { source:'Release', version, pageUrl, zipUrl };
     }
 
     async function latestCommitMeta(){
@@ -526,16 +519,10 @@
       });
       if (!r.ok) throw new Error(`commits/main: ${r.status}`);
       const j = await r.json();
-      const sha = (j.sha || '').slice(0,7);
-      const zipUrl = `https://github.com/${GH_REPO}/archive/refs/heads/main.zip`;
-
-      let size = 0;
-      try {
-        const head = await fetch(zipUrl, { method:'HEAD', cache:'no-store' });
-        const len = head.headers.get('content-length');
-        if (len) size = +len;
-      } catch {}
-      return { source:'Commit', version: sha, zipUrl, size };
+      const sha7 = (j.sha || '').slice(0,7);
+      const pageUrl = `https://github.com/${GH_REPO}`;
+      const zipUrl  = `https://github.com/${GH_REPO}/archive/refs/heads/main.zip`;
+      return { source:'Commit', version: sha7, pageUrl, zipUrl };
     }
 
     async function getLatestMeta(){
@@ -543,195 +530,65 @@
       catch { return await latestCommitMeta(); }
     }
 
-    function humanSize(bytes){
-      if (!bytes || isNaN(bytes)) return '—';
-      const units=['B','KB','MB','GB']; let i=0; let n=bytes;
-      while(n>=1024 && i<units.length-1){ n/=1024; i++; }
-      return `${n.toFixed(n>=10||i<2?0:1)} ${units[i]}`;
+    function shouldShowPopup(remoteVersion){
+      const lastSeen = localStorage.getItem(LS_LAST_SEEN_VERSION);      // our best guess of what user has
+      const lastPrompted = localStorage.getItem(LS_LAST_PROMPTED_VERSION);
+      if (!lastSeen){
+        // First run: assume up-to-date; record and don't bother the user.
+        localStorage.setItem(LS_LAST_SEEN_VERSION, remoteVersion);
+        return false;
+      }
+      if (remoteVersion === lastSeen) return false;               // already up-to-date
+      if (remoteVersion === lastPrompted) return false;           // we've already told them about this one
+      return true;
     }
 
-    // Minimal IndexedDB KV to store the chosen ZIP FileSystemFileHandle
-    const idb = {
-      db: null,
-      async open(){
-        if (this.db) return this.db;
-        this.db = await new Promise((res,rej)=>{
-          const req = indexedDB.open('buzzyFS',1);
-          req.onupgradeneeded = () => req.result.createObjectStore('kv');
-          req.onsuccess = () => res(req.result);
-          req.onerror = () => rej(req.error);
-        });
-        return this.db;
-      },
-      async get(key){
-        const db = await this.open();
-        return new Promise((res,rej)=>{
-          const tx = db.transaction('kv','readonly').objectStore('kv').get(key);
-          tx.onsuccess = () => res(tx.result || null);
-          tx.onerror = () => rej(tx.error);
-        });
-      },
-      async set(key,val){
-        const db = await this.open();
-        return new Promise((res,rej)=>{
-          const tx = db.transaction('kv','readwrite').objectStore('kv').put(val, key);
-          tx.onsuccess = () => res(true);
-          tx.onerror = () => rej(tx.error);
-        });
-      }
+    function fillAndOpenDialog(meta){
+      updVersion.textContent = `Version ${meta.version || '—'}`;
+      updSource.textContent  = `Source ${meta.source}`;
+      btnOpen.href = meta.pageUrl;
+      btnZip.href  = meta.zipUrl;
+      updStatus.textContent = '';
+      updDlg.showModal();
+    }
+
+    btnClose.onclick = () => updDlg.close();
+    btnDismiss.onclick = () => {
+      const v = updVersion.textContent.replace(/^Version\s+/i,'').trim();
+      if (v) localStorage.setItem(LS_LAST_PROMPTED_VERSION, v);
+      updDlg.close();
     };
 
-    async function verifyPermission(handle, rw=true){
-      if (!handle) return false;
-      const opts = { mode: rw ? 'readwrite' : 'read' };
-      try {
-        if (await handle.queryPermission(opts) === 'granted') return true;
-        return (await handle.requestPermission(opts)) === 'granted';
-      } catch { return false; }
-    }
-
-    async function pickExistingZip(){
-      if (!window.showOpenFilePicker) return null;
-      const [h] = await window.showOpenFilePicker({
-        multiple:false,
-        types:[{ description:'ZIP files', accept:{'application/zip':['.zip']} }]
-      });
-      return h || null;
-    }
-
-    async function pickSaveZip(suggestedName='BuzzyGamesLauncher.zip'){
-      if (!window.showSaveFilePicker) return null;
-      return await window.showSaveFilePicker({
-        suggestedName,
-        types:[{ description:'ZIP file', accept:{'application/zip':['.zip']} }]
-      });
-    }
-
-    async function streamToBlob(url){
-      const r = await fetch(url, { cache:'no-store', redirect:'follow' });
-      if (!r.ok) {
-        const rem = r.headers.get('x-ratelimit-remaining');
-        const why = r.status===403 && rem==='0' ? 'GitHub rate limit reached' : `HTTP ${r.status}`;
-        throw new Error(`Download failed (${why})`);
-      }
-      return await r.blob();
-    }
-
-    async function writeBlobToHandle(handle, blob){
-      const w = await handle.createWritable();
-      await w.write(blob);
-      await w.close();
-    }
-
-    function directDownload(url){
-      const a = document.createElement('a');
-      a.href = url; a.download = ''; a.rel='noopener';
-      document.body.appendChild(a); a.click(); a.remove();
-    }
-
-    function setDialog(meta){
-      updVersion.textContent = `Version ${meta.version || '—'}`;
-      updSize.textContent = `Size ${humanSize(meta.size)}`;
-      updSource.textContent = `Source ${meta.source}`;
-      updDlg.dataset.zipUrl = meta.zipUrl;
-      updDlg.dataset.version = meta.version;
-    }
-
-    async function ensureUpToDate(force=false){
+    async function checkForUpdates(force=false){
       const last = +(localStorage.getItem(LS_LAST_CHECK) || 0);
       if (!force && (Date.now() - last) < CHECK_INTERVAL_MS) return;
       localStorage.setItem(LS_LAST_CHECK, String(Date.now()));
+
       showToast('Checking for updates…');
-      try{
-        const meta = await getLatestMeta();
-        const current = localStorage.getItem(LS_REV) || '';
-        if (meta.version && meta.version !== current){
-          setDialog(meta);
-          updStatus.textContent = '';
-          updDlg.showModal();
+      try {
+        const meta = await getLatestMeta(); // {version, source, pageUrl, zipUrl}
+        if (meta?.version && shouldShowPopup(meta.version)){
+          fillAndOpenDialog(meta);
         }
-      }catch(e){
+      } catch (e){
+        // Silent failure: do not annoy user if GH is unreachable
         console.warn('Update check failed:', e);
-        showToast(`Update check failed: ${e.message}`);
-        setTimeout(hideToast, 2500);
-      }finally{
-        hideToast();
+      } finally {
+        setTimeout(hideToast, 800);
       }
     }
 
-    // Dialog wiring
-    btnClose.onclick = () => updDlg.close();
-    btnLater.onclick = () => updDlg.close();
-
-    $('#updPickBtn').onclick = async ()=>{
-      try{
-        const picked = await pickExistingZip() || await pickSaveZip();
-        if (picked){ await idb.set('zipHandle', picked); updStatus.textContent = 'Location saved.'; }
-      }catch(e){ updStatus.textContent = `No file selected (${e && e.message || 'cancelled'})`; }
-    };
-
-    btnDownload.onclick = async ()=>{
-      btnDownload.disabled = true; btnPick.disabled = true;
-      const zipUrl = updDlg.dataset.zipUrl;
-      const ver = updDlg.dataset.version;
-      updStatus.textContent = 'Downloading…';
-      try{
-        const blob = await streamToBlob(zipUrl);
-
-        let storedHandle = await idb.get('zipHandle');
-
-        // If we have a remembered handle, try to overwrite it
-        if (storedHandle && window.showSaveFilePicker){
-          const ok = await verifyPermission(storedHandle, true);
-          if (ok){
-            await writeBlobToHandle(storedHandle, blob);
-            updStatus.textContent = 'Replaced existing ZIP.';
-            localStorage.setItem(LS_REV, ver);
-            setTimeout(()=>updDlg.close(), 700);
-            btnDownload.disabled = false; btnPick.disabled = false;
-            return;
-          }
-        }
-
-        // Otherwise, ask where to save; remember for next time
-        if (window.showSaveFilePicker){
-          const h = await pickSaveZip();
-          if (h){
-            await writeBlobToHandle(h, blob);
-            await idb.set('zipHandle', h);
-            updStatus.textContent = 'Saved. Will overwrite this file next time.';
-            localStorage.setItem(LS_REV, ver);
-            setTimeout(()=>updDlg.close(), 700);
-            btnDownload.disabled = false; btnPick.disabled = false;
-            return;
-          }
-        }
-
-        // Fallback (Safari/Firefox or file://): normal download, manual replace
-        directDownload(zipUrl);
-        updStatus.textContent = 'Downloaded. Replace your old ZIP manually.';
-        localStorage.setItem(LS_REV, ver);
-        setTimeout(()=>updDlg.close(), 1200);
-      }catch(e){
-        console.error(e);
-        updStatus.textContent = `Update failed: ${e && e.message || e}`;
-      }finally{
-        btnDownload.disabled = false; btnPick.disabled = false;
-      }
-    };
-
     // Kick off checks
     (async () => {
-      ensureUpToDate(true);
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) ensureUpToDate(false); });
-      setInterval(()=> ensureUpToDate(false), CHECK_INTERVAL_MS);
+      checkForUpdates(true);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdates(false); });
+      setInterval(()=> checkForUpdates(false), CHECK_INTERVAL_MS);
 
-      // Debug shortcut: Shift+U to force a check
+      // Debug: Shift+U to force a check
       window.addEventListener('keydown', (ev)=>{
-        if (ev.shiftKey && (ev.key==='U' || ev.key==='u')) ensureUpToDate(true);
+        if (ev.shiftKey && (ev.key==='U' || ev.key==='u')) checkForUpdates(true);
       });
     })();
-    /* ---------------- END AUTO-UPDATE ---------------- */
 
     // Init UI
     $('#searchInput').addEventListener('input', render);
