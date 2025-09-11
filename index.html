@@ -31,7 +31,6 @@
     a{color:inherit; text-decoration:none}
     button[disabled]{opacity:.5; cursor:not-allowed}
 
-    /* Top bar */
     .topbar{
       position:sticky; top:0; z-index:50;
       display:flex; align-items:center; gap:14px; padding:14px 18px;
@@ -58,8 +57,11 @@
     }
     .btn.secondary{ background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12); box-shadow:none; }
     .btn.small{ padding:8px 12px; border-radius:10px; font-size:13px; }
+    .ghost-btn{
+      background:transparent; border:1px solid rgba(255,255,255,.12); color:var(--txt);
+      padding:8px 10px; border-radius:10px; cursor:pointer;
+    }
 
-    /* Install banner (recommended) */
     .install-banner{
       display:flex; align-items:center; gap:12px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
@@ -98,16 +100,7 @@
     .title{font-weight:800; line-height:1.3}
     .genres{color:var(--muted); font-size:12px}
     .desc{ color:var(--muted); font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-    .card .play{
-      margin-top:auto; padding:8px 10px; display:flex; justify-content:space-between; align-items:center;
-      background:rgba(255,255,255,.03); border-top:1px solid rgba(255,255,255,.06)
-    }
-    .ghost-btn{
-      background:transparent; border:1px solid rgba(255,255,255,.12); color:var(--txt);
-      padding:8px 10px; border-radius:10px; cursor:pointer;
-    }
 
-    /* Dialogs */
     dialog{
       width:min(720px, 92vw); background:var(--bg-elev); color:var(--txt); border:1px solid rgba(255,255,255,.12);
       border-radius:20px; box-shadow:0 30px 60px rgba(0,0,0,.45); padding:0; overflow:hidden;
@@ -127,6 +120,16 @@
       .search{width:auto}
       .row{grid-auto-columns: 78%}
     }
+
+    /* tiny toast */
+    .toast {
+      position: fixed; inset: auto 16px 16px auto;
+      background: rgba(255,255,255,.08);
+      border: 1px solid rgba(255,255,255,.12);
+      border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--muted);
+      backdrop-filter: blur(6px); display: none; z-index: 1000;
+    }
+    .toast.show { display: block; }
   </style>
 
   <script>
@@ -149,7 +152,6 @@
       const icon192 = makeIcon(192);
       const icon512 = makeIcon(512);
 
-      // Apple touch icon for iOS
       const apple = document.createElement('link');
       apple.rel = 'apple-touch-icon';
       apple.href = icon192;
@@ -196,7 +198,6 @@
     <button class="btn" id="installBtn" title="Recommended">Install App</button>
   </header>
 
-  <!-- Soft recommendation banner (non-blocking) -->
   <div class="install-banner" id="installBanner" hidden>
     <div class="note">For the best experience, <b>install Buzzy Games</b> (recommended).</div>
     <div class="actions">
@@ -243,41 +244,71 @@
     </div>
   </dialog>
 
+  <!-- Update Available Modal -->
+  <dialog id="updateDialog">
+    <div class="modal-head">
+      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
+        <h3 style="margin:0">New update available</h3>
+        <button class="x" id="updCloseBtn" title="Close">&times;</button>
+      </div>
+    </div>
+    <div class="modal-body">
+      <div style="color:var(--muted)">A new deployment of <b>Buzzy Games Launcher</b> is available.</div>
+      <div class="meta" style="margin-top:6px">
+        <span id="updVersion" class="pill">Version –</span>
+        <span id="updSize" class="pill">Size –</span>
+        <span id="updSource" class="pill">Source –</span>
+      </div>
+      <div id="updNote" style="font-size:13px;color:var(--muted)">
+        Click <b>Download &amp; Replace</b> to save the new ZIP and overwrite your existing copy.
+      </div>
+      <div id="updCompat" style="font-size:12px;color:var(--muted)">
+        Tip: On Chrome/Edge you can overwrite the same file. On Safari/Firefox you'll just download a new ZIP.
+      </div>
+      <div id="updStatus" style="font-size:12px;color:var(--muted)"></div>
+    </div>
+    <div class="modal-actions">
+      <button class="btn" id="updDownloadBtn">Download &amp; Replace</button>
+      <button class="btn secondary" id="updPickBtn" title="Choose a different file to overwrite">Choose File…</button>
+      <button class="ghost-btn" id="updLaterBtn">Later</button>
+    </div>
+  </dialog>
+
+  <div id="updateToast" class="toast">Checking for updates…</div>
+
   <script>
     const $ = (sel, el=document) => el.querySelector(sel);
     const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
 
-    // ---- Catalog (title, url, image, description, genres, release) ----
+    // ---- Catalog ----
     const catalog = [
       { title:'2048', url:'https://www.mathsisfun.com/games/a/2048/index.html',
         image:'https://plays.org/wp-content/uploads/2048-game.png',
         description:'Slide tiles to combine numbers and reach 2048.',
         genres:['Puzzle','Casual'], release:'2025-09-08' },
-      
+
       { title:'[DOWN] Slope', url:'https://kdata1.com/2020/05/slope/',
         image:'https://th.bing.com/th/id/R.a1698336509a355d218f5f4211f345d0?rik=ae%2ft9J6scxY7ow&pid=ImgRaw&r=0',
         description:'High-speed downhill reflex challenge with neon vibes.',
         genres:['Action','Arcade'], release:'2025-09-08' },
- 
+
       { title:'Snow Rider 3D', url:'https://www.hoodamath.com/mobile/games/snow-rider-3d/game.html?nocheckorient=1',
         image:'https://www.hoodamath.com/large/snowrider3d_300x225.jpg',
         description:'Sled to get the highest score.',
         genres:['Action','Strategic'], release:'2025-09-08' },
-      
+
       { title:'[DOWN] Drive Mad', url:'https://mathplayzone.com/wp-content/uploads/assets/drive-mad/',
         image:'https://tse1.mm.bing.net/th/id/OIP.odp26kFzqu9k2p8kmeAJGgHaHa?r=0&cb=thfc1ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3',
         description:'Complete levels and drive your way up.',
         genres:['Action','Strategic'], release:'2025-09-08' },
-      
+
       { title:'Eggy Car', url:'https://webglmath.github.io/eggy-car/',
         image:'https://eggycar.co/data/image/image.png',
         description:'Dont let your egg break.',
         genres:['Action','Strategic'], release:'2025-09-08' },
-      
-     
     ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
 
-    // ---- Install (recommended), but not required ----
+    // ---- Install UI (recommendation only) ----
     const LS_INSTALLED = 'buzzy.installed';
     const LS_BANNER_DISMISSED = 'buzzy.installBannerDismissed';
     let deferredPrompt = null;
@@ -297,9 +328,7 @@
     }
 
     function updateInstallUI(){
-      // Header Install button visibility
       $('#installBtn').style.display = installed ? 'none' : '';
-      // Soft banner (only if not installed and not dismissed)
       const dismissed = JSON.parse(localStorage.getItem(LS_BANNER_DISMISSED) || 'false');
       $('#installBanner').hidden = installed || dismissed;
     }
@@ -311,7 +340,6 @@
     });
     window.addEventListener('appinstalled', () => setInstalled(true));
 
-    // Header CTA
     $('#installBtn').onclick = async () => {
       if (deferredPrompt) {
         deferredPrompt.prompt();
@@ -322,28 +350,20 @@
         alert(installHelpText());
       }
     };
-
-    // Banner CTAs
     $('#bannerInstallBtn').onclick = () => $('#installBtn').click();
     $('#bannerDismissBtn').onclick = () => {
       localStorage.setItem(LS_BANNER_DISMISSED, 'true');
       updateInstallUI();
     };
-
     function installHelpText(){
       const ua = navigator.userAgent.toLowerCase();
-      if (/iphone|ipad|ipod/.test(ua)) {
-        return 'On iPhone/iPad: Share → Add to Home Screen.';
-      } else if (/android/.test(ua)) {
-        return 'On Android Chrome: ⋮ menu → Install app (or Add to Home screen).';
-      } else {
-        return 'On desktop Chrome/Edge: Click the Install icon in the address bar, or use the browser menu.';
-      }
+      if (/iphone|ipad|ipod/.test(ua)) return 'On iPhone/iPad: Share → Add to Home Screen.';
+      if (/android/.test(ua)) return 'On Android Chrome: ⋮ menu → Install app (or Add to Home screen).';
+      return 'On desktop Chrome/Edge: Click the Install icon in the address bar, or use the browser menu.';
     }
 
     // ---- Rendering ----
     const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
-
     function makeCoverFallback(title){
       const colors = [
         ['#fbbf24','#8b5cf6'], ['#22d3ee','#06b6d4'],
@@ -400,7 +420,6 @@
       const byDate = [...all].sort((a,b)=> new Date(b.release||0) - new Date(a.release||0));
       $('#newRow').innerHTML = byDate.slice(0,10).map(g=>cardHTML(g,true)).join('');
 
-      // Genre sections
       const genres = Array.from(new Set(all.flatMap(g=>g.genres||[]))).sort();
       const container = $('#genresContainer'); container.innerHTML = '';
       genres.forEach(genre=>{
@@ -426,12 +445,11 @@
       $$('.card [data-quickplay]').forEach(btn=>{
         btn.onclick = () => {
           const id = btn.getAttribute('data-quickplay');
-          quickPlay(id); // no gate; install is recommended only
+          quickPlay(id);
         };
       });
     }
 
-    // ---- Modal ----
     function openGameModal(id){
       const g = catalog.find(x=>x.id===id); if(!g) return;
       $('#modalCover').src = g.image || makeCoverFallback(g.title);
@@ -453,14 +471,243 @@
       location.href = `./embed.html?${q.toString()}`;
     }
 
-    // ---- PWA SW ----
+    // ---- PWA Service Worker (still recommended) ----
     if('serviceWorker' in navigator){
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(console.warn);
       });
     }
 
-    // ---- Search and init ----
+    // ----------------- AUTO-UPDATE (ZIP download & replace) -----------------
+    const GH_REPO = 'BuzzyBoy42/buzzygames';
+    const LS_REV = 'buzzy.revision';
+    const LS_LAST_CHECK = 'buzzy.revCheckedAt';
+    const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000;
+
+    const toast = $('#updateToast');
+    const updDlg = $('#updateDialog');
+    const updVersion = $('#updVersion');
+    const updSize = $('#updSize');
+    const updSource = $('#updSource');
+    const updStatus = $('#updStatus');
+    const btnDownload = $('#updDownloadBtn');
+    const btnPick = $('#updPickBtn');
+
+    function showToast(msg){ if (toast){ toast.textContent = msg; toast.classList.add('show'); } }
+    function hideToast(){ toast?.classList.remove('show'); }
+
+    async function latestReleaseMeta(){
+      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/releases/latest`, {
+        headers: {'Accept':'application/vnd.github+json'}, cache:'no-store'
+      });
+      if (!r.ok) throw new Error('no_release');
+      const j = await r.json();
+      const asset = (j.assets||[])[0]; // pick first asset if present
+      if (!asset) throw new Error('no_asset');
+      return {
+        source: 'Release',
+        version: j.tag_name || (j.name || '').trim() || (j.published_at || '').slice(0,10),
+        zipUrl: asset.browser_download_url,
+        size: asset.size || 0
+      };
+    }
+
+    async function latestCommitMeta(){
+      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/commits/main`, {
+        headers: {'Accept':'application/vnd.github+json'}, cache:'no-store'
+      });
+      if (!r.ok) throw new Error('GitHub API commit error');
+      const j = await r.json();
+      const sha = (j.sha || '').slice(0,7);
+      // Use codeload to fetch a zip for that commit (CORS-friendly)
+      const zipUrl = `https://codeload.github.com/${GH_REPO}/zip/${j.sha}`;
+      return { source: 'Commit', version: sha, zipUrl, size: 0 };
+    }
+
+    async function getLatestMeta(){
+      try { return await latestReleaseMeta(); }
+      catch { return await latestCommitMeta(); }
+    }
+
+    function humanSize(bytes){
+      if (!bytes || isNaN(bytes)) return '—';
+      const units=['B','KB','MB','GB']; let i=0; let n=bytes;
+      while(n>=1024 && i<units.length-1){ n/=1024; i++; }
+      return `${n.toFixed(n>=10||i<2?0:1)} ${units[i]}`;
+    }
+
+    // ---- IndexedDB minimal KV for persisting the chosen ZIP handle
+    const idb = {
+      db: null,
+      async open(){
+        if (this.db) return this.db;
+        this.db = await new Promise((res,rej)=>{
+          const req = indexedDB.open('buzzyFS',1);
+          req.onupgradeneeded = () => req.result.createObjectStore('kv');
+          req.onsuccess = () => res(req.result);
+          req.onerror = () => rej(req.error);
+        });
+        return this.db;
+      },
+      async get(key){
+        const db = await this.open();
+        return new Promise((res,rej)=>{
+          const tx = db.transaction('kv','readonly').objectStore('kv').get(key);
+          tx.onsuccess = () => res(tx.result || null);
+          tx.onerror = () => rej(tx.error);
+        });
+      },
+      async set(key,val){
+        const db = await this.open();
+        return new Promise((res,rej)=>{
+          const tx = db.transaction('kv','readwrite').objectStore('kv').put(val, key);
+          tx.onsuccess = () => res(true);
+          tx.onerror = () => rej(tx.error);
+        });
+      },
+      async del(key){
+        const db = await this.open();
+        return new Promise((res,rej)=>{
+          const tx = db.transaction('kv','readwrite').objectStore('kv').delete(key);
+          tx.onsuccess = () => res(true);
+          tx.onerror = () => rej(tx.error);
+        });
+      }
+    };
+
+    async function verifyPermission(handle, rw=true){
+      if (!handle) return false;
+      const opts = { mode: rw ? 'readwrite' : 'read' };
+      if (await handle.queryPermission(opts) === 'granted') return true;
+      return (await handle.requestPermission(opts)) === 'granted';
+    }
+
+    async function pickExistingZip(){
+      if (!window.showOpenFilePicker) return null;
+      const [h] = await window.showOpenFilePicker({
+        multiple:false,
+        types:[{ description:'ZIP files', accept:{'application/zip':['.zip']} }]
+      });
+      return h || null;
+    }
+
+    async function pickSaveZip(suggestedName='BuzzyGamesLauncher.zip'){
+      if (!window.showSaveFilePicker) return null;
+      return await window.showSaveFilePicker({
+        suggestedName,
+        types:[{ description:'ZIP file', accept:{'application/zip':['.zip']} }]
+      });
+    }
+
+    async function streamToBlob(url){
+      const r = await fetch(url, {cache:'no-store'});
+      if (!r.ok) throw new Error('Download failed');
+      return await r.blob(); // simple path; progress optional
+    }
+
+    async function writeBlobToHandle(handle, blob){
+      const w = await handle.createWritable();
+      await w.write(blob);
+      await w.close();
+    }
+
+    function directDownload(url){
+      const a = document.createElement('a');
+      a.href = url; a.download = ''; a.rel='noopener';
+      document.body.appendChild(a); a.click(); a.remove();
+    }
+
+    // Main check
+    async function ensureUpToDate(force=false){
+      const last = +(localStorage.getItem(LS_LAST_CHECK) || 0);
+      if (!force && (Date.now() - last) < CHECK_INTERVAL_MS) return;
+      localStorage.setItem(LS_LAST_CHECK, String(Date.now()));
+      showToast('Checking for updates…');
+      try{
+        const meta = await getLatestMeta(); // {version, zipUrl, source, size}
+        const current = localStorage.getItem(LS_REV) || '';
+        if (meta.version && meta.version !== current){
+          // Fill dialog
+          updVersion.textContent = `Version ${meta.version}`;
+          updSize.textContent = `Size ${humanSize(meta.size)}`;
+          updSource.textContent = `Source ${meta.source}`;
+          updDlg.dataset.zipUrl = meta.zipUrl;
+          updDlg.dataset.version = meta.version;
+          $('#updCloseBtn').onclick = () => updDlg.close();
+          $('#updLaterBtn').onclick = () => updDlg.close();
+
+          // Prepare default handle info
+          let storedHandle = await idb.get('zipHandle');
+
+          btnPick.onclick = async ()=>{
+            try{
+              const picked = await pickExistingZip() || await pickSaveZip();
+              if (picked){ await idb.set('zipHandle', picked); storedHandle = picked; updStatus.textContent = 'Location saved.'; }
+            }catch(e){ updStatus.textContent = 'No file selected.'; }
+          };
+
+          btnDownload.onclick = async ()=>{
+            btnDownload.disabled = true; btnPick.disabled = true;
+            updStatus.textContent = 'Downloading…';
+            try{
+              const blob = await streamToBlob(meta.zipUrl);
+
+              // Chromium path: overwrite a remembered file
+              if (storedHandle && window.showSaveFilePicker){
+                const ok = await verifyPermission(storedHandle, true);
+                if (ok){
+                  await writeBlobToHandle(storedHandle, blob);
+                  updStatus.textContent = 'Replaced existing ZIP.';
+                  localStorage.setItem(LS_REV, meta.version);
+                  setTimeout(()=>updDlg.close(), 800);
+                  return;
+                }
+              }
+
+              // If no handle yet, ask user where to save (this will become the remembered target)
+              if (window.showSaveFilePicker){
+                const h = await pickSaveZip();
+                if (h){
+                  await writeBlobToHandle(h, blob);
+                  await idb.set('zipHandle', h);
+                  updStatus.textContent = 'Saved and will overwrite this file next time.';
+                  localStorage.setItem(LS_REV, meta.version);
+                  setTimeout(()=>updDlg.close(), 800);
+                  return;
+                }
+              }
+
+              // Fallback: plain download (Safari/Firefox)
+              directDownload(meta.zipUrl);
+              updStatus.textContent = 'Downloaded. Replace your old ZIP manually.';
+              localStorage.setItem(LS_REV, meta.version);
+              setTimeout(()=>updDlg.close(), 1200);
+            }catch(e){
+              console.warn(e);
+              updStatus.textContent = 'Update failed. Try again or use the Choose File… button.';
+            }finally{
+              btnDownload.disabled = false; btnPick.disabled = false;
+            }
+          };
+
+          updDlg.showModal();
+        }
+      }catch(e){
+        console.warn('Update check failed:', e);
+      }finally{
+        hideToast();
+      }
+    }
+
+    // Kick off: on load, on focus, periodic
+    (async () => {
+      ensureUpToDate(true);
+      document.addEventListener('visibilitychange', () => { if (!document.hidden) ensureUpToDate(false); });
+      setInterval(()=> ensureUpToDate(false), CHECK_INTERVAL_MS);
+    })();
+    // ----------------- END AUTO-UPDATE -----------------
+
+    // Init UI
     $('#searchInput').addEventListener('input', render);
     render();
   </script>
