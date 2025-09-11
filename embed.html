@@ -1,178 +1,62 @@
 <!doctype html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0f14" />
-  <title>Play — Buzzy Games Launcher</title>
-
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
+  <title>Play · Buzzy Games</title>
+  <meta name="theme-color" content="#0b0f14"/>
   <style>
-    :root{
-      --bg:#0b0f14; --bg-elev:#111826; --txt:#e6ebf5; --muted:#aab6ca;
-      --accent:#fbbf24; --accent-2:#8b5cf6; --glass:rgba(255,255,255,.06);
-      --radius:18px; --shadow:0 8px 24px rgba(0,0,0,.3);
+    :root{ --bg:#0b0f14; --txt:#e6ebf5; --muted:#aab6ca; --glass:rgba(255,255,255,.06); }
+    *{ box-sizing:border-box }
+    html,body{ height:100%; }
+    body{ margin:0; background:#0b0f14; color:var(--txt); font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; }
+    .bar{
+      position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px;
+      padding:10px 12px; background:linear-gradient(180deg, rgba(11,15,20,.9), rgba(11,15,20,.6));
+      border-bottom:1px solid rgba(255,255,255,.06); backdrop-filter: blur(8px);
     }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; background:radial-gradient(1200px 600px at 20% -10%, #152033, transparent 60%),
-                 radial-gradient(1200px 800px at 110% 10%, #1c2a44, transparent 50%), var(--bg);
-      color:var(--txt); font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial;
-    }
-    a{color:inherit; text-decoration:none}
-
-    /* Top bar */
-    .topbar{
-      position:sticky; top:0; z-index:50; display:flex; align-items:center; gap:12px;
-      padding:12px 14px; background:linear-gradient(180deg, rgba(11,15,20,.92), rgba(11,15,20,.72));
-      border-bottom:1px solid rgba(255,255,255,.08); backdrop-filter: blur(8px);
-    }
-    .logo{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;
-      background:linear-gradient(140deg,var(--accent),var(--accent-2));box-shadow:0 6px 16px rgba(251,191,36,.35)}
-    .brand{font-weight:800}
-    .grow{flex:1}
-    .btn, .icon-btn{
-      background:linear-gradient(140deg,var(--accent),var(--accent-2));
-      border:none; color:#08121f; font-weight:700; padding:10px 14px; border-radius:12px; cursor:pointer;
-      box-shadow:0 6px 16px rgba(251,191,36,.35);
-    }
-    .icon-btn{
-      display:flex; align-items:center; gap:8px; background:transparent; color:var(--txt);
-      border:1px solid rgba(255,255,255,.12); box-shadow:none; padding:8px 12px;
-    }
-
-    /* Hero (optional image) */
-    .hero{
-      position:relative; height:220px; border-bottom:1px solid rgba(255,255,255,.08); overflow:hidden;
-      background:#0f1829;
-    }
-    .hero img{
-      position:absolute; inset:0; width:100%; height:100%; object-fit:cover; filter:blur(8px) brightness(0.75);
-      transform:scale(1.08);
-    }
-    .hero-overlay{
-      position:relative; z-index:1; height:100%; display:flex; align-items:end;
-      background:linear-gradient(180deg, rgba(11,15,20,0), rgba(11,15,20,.75) 40%, rgba(11,15,20,1) 80%);
-      padding:16px;
-    }
-    .title{font-size:20px; font-weight:800; margin:0}
-    .desc{color:var(--muted); font-size:13px; margin-top:6px; max-width:1000px}
-
-    /* Player frame */
-    .frame-wrap{
-      position:relative; margin:16px; margin-top:0; border:1px solid rgba(255,255,255,.1);
-      border-radius:16px; overflow:hidden; box-shadow: var(--shadow);
-      background:#0e1626;
-      height: calc(100vh - 220px - 16px - 64px);
-      min-height: 360px;
-    }
-    .controls{
-      position:absolute; top:8px; right:8px; display:flex; gap:8px; z-index:3;
-    }
-    iframe{
-      position:absolute; inset:0; width:100%; height:100%; border:0; background:#000;
-    }
-
-    /* Empty/error state */
-    .empty{
-      margin:20px; padding:22px; border:1px dashed rgba(255,255,255,.2); border-radius:16px;
-      color:var(--muted); text-align:center; background:rgba(255,255,255,.03)
-    }
-
-    @media (max-width:720px){
-      .frame-wrap{ height: calc(100vh - 220px - 12px - 56px); }
-    }
+    .btn{ background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 12px; cursor:pointer; }
+    .title{ font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+    .muted{ color:var(--muted); font-size:12px }
+    .wrap{ position:fixed; inset:48px 0 0 0; display:flex; }
+    #frame{ flex:1; border:none; background:#000; }
   </style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="logo" aria-hidden="true">🐝</div>
-    <div class="brand">Buzzy Games</div>
-    <div class="grow"></div>
-    <button class="icon-btn" id="homeBtn" title="Back to Home">← Home</button>
-  </header>
-
-  <div class="hero" id="hero">
-    <img id="heroImg" alt="" />
-    <div class="hero-overlay">
-      <div>
-        <h1 class="title" id="gameTitle">Loading…</h1>
-        <div class="desc" id="gameDesc"></div>
-      </div>
+  <div class="bar">
+    <button class="btn" id="backBtn">← Home</button>
+    <div class="title" id="title">Loading…</div>
+    <div style="margin-left:auto; display:flex; gap:8px">
+      <button class="btn" id="fsBtn" title="Fullscreen">Fullscreen</button>
     </div>
   </div>
-
-  <div class="frame-wrap" id="frameWrap">
-    <div class="controls">
-      <button class="icon-btn" id="fullscreenBtn">Fullscreen</button>
-    </div>
-    <iframe id="gameFrame" allow="fullscreen; gamepad; autoplay; xr-spatial-tracking" referrerpolicy="no-referrer"></iframe>
+  <div class="wrap">
+    <iframe id="frame" allow="autoplay; fullscreen; gamepad; xr-spatial-tracking; accelerometer; magnetometer; gyroscope; clipboard-read; clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-modals allow-popups" referrerpolicy="no-referrer"></iframe>
   </div>
-
-  <div id="errorBox" class="empty" hidden></div>
 
   <script>
-    // --- Helpers ---
-    const $ = (s,el=document)=>el.querySelector(s);
     const params = new URLSearchParams(location.search);
-    const rawUrl = params.get('url') || '';
-    const title = params.get('title') || 'Untitled Game';
-    const image = params.get('image') || '';
-    const desc  = params.get('desc')  || '';
+    const url = params.get('url') || '';
+    const title = params.get('title') || 'Game';
+    document.getElementById('title').textContent = title;
+    const frame = document.getElementById('frame');
 
-    document.title = `${title} — Buzzy Games Launcher`;
-    $('#gameTitle').textContent = title;
-    $('#gameDesc').textContent = desc;
-    if(image){
-      $('#heroImg').src = image;
-      $('#heroImg').style.display = '';
+    // Defensive: block javascript: and data:text/html
+    if (!/^https?:\/\//i.test(url)) {
+      frame.srcdoc = `<div style="display:grid;place-items:center;height:100%;color:#e6ebf5"><div>Invalid or missing URL.</div><div class="muted">Got: ${String(url || '—')}</div></div>`;
     } else {
-      $('#heroImg').style.display = 'none';
+      frame.src = url;
     }
 
-    // Validate URL
-    let gameURL = null;
-    try{
-      const u = new URL(rawUrl);
-      if(u.protocol==='http:' || u.protocol==='https:') gameURL = u.href;
-    }catch{ /* ignore */ }
+    document.getElementById('backBtn').onclick = () => history.length > 1 ? history.back() : (location.href = './index.html');
 
-    if(!gameURL){
-      showError('Invalid or missing game URL. Make sure you pass "?url=https://example.com" in the link.');
-    }else{
-      $('#gameFrame').src = gameURL;
-    }
-
-    function showError(msg){
-      const eb = $('#errorBox');
-      eb.hidden = false;
-      eb.innerHTML = `<div style="font-weight:700; margin-bottom:6px">Cannot load game</div>
-        <div>${msg}</div>
-        <div style="margin-top:10px">Tip: Some sites block embedding. If this stays blank, return to the homepage and try a different title.</div>`;
-      $('#frameWrap').style.display = 'none';
-    }
-
-    // --- Back/Home ---
-    $('#homeBtn').onclick = () => { location.href = './'; };
-
-    // --- Fullscreen toggle ---
-    const wrap = $('#frameWrap');
-    const fsBtn = $('#fullscreenBtn');
-    fsBtn.onclick = async ()=>{
-      if(!document.fullscreenElement){
-        try{ await wrap.requestFullscreen(); }catch(e){ console.warn(e); }
-      } else {
-        await document.exitFullscreen();
-      }
+    document.getElementById('fsBtn').onclick = async () => {
+      const el = document.documentElement;
+      try{
+        if (!document.fullscreenElement) await el.requestFullscreen();
+        else await document.exitFullscreen();
+      }catch(e){ console.warn(e); }
     };
-    document.addEventListener('fullscreenchange', ()=>{
-      fsBtn.textContent = document.fullscreenElement ? 'Exit Fullscreen' : 'Fullscreen';
-    });
-
-    // Service worker (so the shell loads offline; game content remains online)
-    if('serviceWorker' in navigator){
-      window.addEventListener('load', ()=> navigator.serviceWorker.register('./sw.js').catch(console.warn));
-    }
   </script>
 </body>
 </html>
