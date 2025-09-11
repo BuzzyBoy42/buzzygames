@@ -31,6 +31,7 @@
     a{color:inherit; text-decoration:none}
     button[disabled]{opacity:.5; cursor:not-allowed}
 
+    /* Top bar */
     .topbar{
       position:sticky; top:0; z-index:50;
       display:flex; align-items:center; gap:14px; padding:14px 18px;
@@ -62,6 +63,7 @@
       padding:8px 10px; border-radius:10px; cursor:pointer;
     }
 
+    /* Install banner (recommended) */
     .install-banner{
       display:flex; align-items:center; gap:12px;
       background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
@@ -101,6 +103,7 @@
     .genres{color:var(--muted); font-size:12px}
     .desc{ color:var(--muted); font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
 
+    /* Dialogs */
     dialog{
       width:min(720px, 92vw); background:var(--bg-elev); color:var(--txt); border:1px solid rgba(255,255,255,.12);
       border-radius:20px; box-shadow:0 30px 60px rgba(0,0,0,.45); padding:0; overflow:hidden;
@@ -121,7 +124,7 @@
       .row{grid-auto-columns: 78%}
     }
 
-    /* tiny toast */
+    /* Toast */
     .toast {
       position: fixed; inset: auto 16px 16px auto;
       background: rgba(255,255,255,.08);
@@ -133,7 +136,7 @@
   </style>
 
   <script>
-    // ---- Dynamic manifest (no extra file needed) ----
+    /* -------- Dynamic manifest (no extra file needed) -------- */
     (function setupDynamicManifest(){
       const makeIcon = (size) => {
         const c = document.createElement('canvas'); c.width = c.height = size;
@@ -198,6 +201,7 @@
     <button class="btn" id="installBtn" title="Recommended">Install App</button>
   </header>
 
+  <!-- Soft recommendation banner (non-blocking) -->
   <div class="install-banner" id="installBanner" hidden>
     <div class="note">For the best experience, <b>install Buzzy Games</b> (recommended).</div>
     <div class="actions">
@@ -274,13 +278,14 @@
     </div>
   </dialog>
 
+  <!-- Checking toast -->
   <div id="updateToast" class="toast">Checking for updates…</div>
 
   <script>
     const $ = (sel, el=document) => el.querySelector(sel);
     const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
 
-    // ---- Catalog ----
+    /* ---------------- Catalog ---------------- */
     const catalog = [
       { title:'2048', url:'https://www.mathsisfun.com/games/a/2048/index.html',
         image:'https://plays.org/wp-content/uploads/2048-game.png',
@@ -306,15 +311,9 @@
         image:'https://eggycar.co/data/image/image.png',
         description:'Dont let your egg break.',
         genres:['Action','Strategic'], release:'2025-09-08' },
-
-      { title:'Eggy Car', url:'https://webglmath.github.io/eggy-car/',
-        image:'https://eggycar.co/data/image/image.png',
-        description:'Dont let your egg break.',
-        genres:['Action','Strategic'], release:'2025-09-08' },
-      
     ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
 
-    // ---- Install UI (recommendation only) ----
+    /* ---------------- Install UI (recommended only) ---------------- */
     const LS_INSTALLED = 'buzzy.installed';
     const LS_BANNER_DISMISSED = 'buzzy.installBannerDismissed';
     let deferredPrompt = null;
@@ -368,7 +367,7 @@
       return 'On desktop Chrome/Edge: Click the Install icon in the address bar, or use the browser menu.';
     }
 
-    // ---- Rendering ----
+    /* ---------------- Render ---------------- */
     const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
     function makeCoverFallback(title){
       const colors = [
@@ -408,13 +407,6 @@
           <div class="genres">${escapeHtml(genres)}</div>
           <div class="desc">${escapeHtml(g.description||'')}</div>
         </div>
-        <div class="play">
-          <span style="color:var(--muted); font-size:12px">${installed ? 'Open' : 'Open (install recommended)'}</span>
-          <div style="display:flex; gap:8px">
-            <button class="ghost-btn" data-open="${g.id}">Details</button>
-            <button class="ghost-btn" data-quickplay="${g.id}">Play</button>
-          </div>
-        </div>
       </article>`;
     }
 
@@ -431,8 +423,7 @@
       genres.forEach(genre=>{
         const items = all.filter(g=> (g.genres||[]).includes(genre));
         if(!items.length) return;
-        const sec = document.createElement('div');
-        sec.className = 'genre-sec';
+        const sec = document.createElement('section');
         sec.innerHTML = `
           <div class="section-head"><h2>${genre}</h2></div>
           <div class="row">${items.map(cardHTML).join('')}</div>
@@ -445,17 +436,12 @@
     }
 
     function attachCardEvents(){
-      $$('.card [data-open]').forEach(btn=>{
-        btn.onclick = () => openGameModal(btn.getAttribute('data-open'));
-      });
-      $$('.card [data-quickplay]').forEach(btn=>{
-        btn.onclick = () => {
-          const id = btn.getAttribute('data-quickplay');
-          quickPlay(id);
-        };
+      $$('.card').forEach(card=>{
+        card.onclick = () => openGameModal(card.getAttribute('data-id'));
       });
     }
 
+    /* ---------------- Modal & Play ---------------- */
     function openGameModal(id){
       const g = catalog.find(x=>x.id===id); if(!g) return;
       $('#modalCover').src = g.image || makeCoverFallback(g.title);
@@ -471,21 +457,15 @@
       $('#gameModal').showModal();
     }
     function closeModal(){ $('#gameModal').close(); }
-    function quickPlay(id){
-      const g = catalog.find(x=>x.id===id); if(!g) return;
-      const q = new URLSearchParams({ url: g.url, title: g.title, image: g.image || '', desc: g.description || '' });
-      location.href = `./embed.html?${q.toString()}`;
-    }
 
-    // ---- PWA Service Worker (still recommended) ----
+    /* ---------------- PWA SW ---------------- */
     if('serviceWorker' in navigator){
       window.addEventListener('load', () => {
         navigator.serviceWorker.register('./sw.js').catch(console.warn);
       });
     }
 
-        <!-- ----------------- AUTO-UPDATE (ZIP download & replace) ----------------- -->
-    <script>
+    /* ---------------- AUTO-UPDATE (ZIP download & replace) ---------------- */
     const GH_REPO = 'BuzzyBoy42/buzzygames';
     const LS_REV = 'buzzy.revision';
     const LS_LAST_CHECK = 'buzzy.revCheckedAt';
@@ -505,8 +485,8 @@
     function showToast(msg){ if (toast){ toast.textContent = msg; toast.classList.add('show'); } }
     function hideToast(){ toast?.classList.remove('show'); }
 
-    // Optional: set a token to avoid rate limits/private repo:
-    // localStorage.setItem('buzzy.ghToken', 'ghp_yourtoken...')
+    // (Optional) to avoid rate limits / access private repos, set a token once in DevTools:
+    // localStorage.setItem('buzzy.ghToken', 'ghp_...')
     function ghHeaders(extra={}) {
       const h = { 'Accept': 'application/vnd.github+json', ...extra };
       const t = (localStorage.getItem('buzzy.ghToken')||'').trim();
@@ -521,14 +501,12 @@
       if (!r.ok) throw new Error(`releases/latest: ${r.status}`);
       const j = await r.json();
 
-      // Prefer first .zip asset if present; otherwise use release zipball_url
       let zipUrl = null, size = 0;
       if (Array.isArray(j.assets) && j.assets.length){
         const asset = j.assets.find(a => /zip$/i.test(a.browser_download_url)) || j.assets[0];
         zipUrl = asset.browser_download_url; size = asset.size || 0;
       } else {
-        // zipball_url redirects to codeload with proper CORS
-        zipUrl = j.zipball_url;
+        zipUrl = j.zipball_url; // redirects to codeload
       }
       return {
         source: 'Release',
@@ -538,34 +516,26 @@
     }
 
     async function latestCommitMeta(){
-      // get latest commit sha on main
       const r = await fetch(`https://api.github.com/repos/${GH_REPO}/commits/main`, {
         headers: ghHeaders(), cache:'no-store'
       });
       if (!r.ok) throw new Error(`commits/main: ${r.status}`);
       const j = await r.json();
       const sha = (j.sha || '').slice(0,7);
-
-      // simple, CORS-friendly zip URL (redirects to codeload)
       const zipUrl = `https://github.com/${GH_REPO}/archive/refs/heads/main.zip`;
 
-      // Try to get size (may be blocked by CORS; ignore if fails)
       let size = 0;
       try {
         const head = await fetch(zipUrl, { method:'HEAD', cache:'no-store' });
         const len = head.headers.get('content-length');
         if (len) size = +len;
       } catch {}
-
       return { source:'Commit', version: sha, zipUrl, size };
     }
 
     async function getLatestMeta(){
       try { return await latestReleaseMeta(); }
-      catch (e) {
-        // If no release or private/limited, try commit fallback
-        return await latestCommitMeta();
-      }
+      catch { return await latestCommitMeta(); }
     }
 
     function humanSize(bytes){
@@ -575,7 +545,7 @@
       return `${n.toFixed(n>=10||i<2?0:1)} ${units[i]}`;
     }
 
-    // IndexedDB KV for persisting the chosen ZIP handle
+    // Minimal IndexedDB KV to store the chosen ZIP FileSystemFileHandle
     const idb = {
       db: null,
       async open(){
@@ -600,14 +570,6 @@
         const db = await this.open();
         return new Promise((res,rej)=>{
           const tx = db.transaction('kv','readwrite').objectStore('kv').put(val, key);
-          tx.onsuccess = () => res(true);
-          tx.onerror = () => rej(tx.error);
-        });
-      },
-      async del(key){
-        const db = await this.open();
-        return new Promise((res,rej)=>{
-          const tx = db.transaction('kv','readwrite').objectStore('kv').delete(key);
           tx.onsuccess = () => res(true);
           tx.onerror = () => rej(tx.error);
         });
@@ -641,10 +603,8 @@
     }
 
     async function streamToBlob(url){
-      // Ensure redirects follow and cache is bypassed
       const r = await fetch(url, { cache:'no-store', redirect:'follow' });
       if (!r.ok) {
-        // Rate limit or auth error—surface GitHub headers if present
         const rem = r.headers.get('x-ratelimit-remaining');
         const why = r.status===403 && rem==='0' ? 'GitHub rate limit reached' : `HTTP ${r.status}`;
         throw new Error(`Download failed (${why})`);
@@ -678,7 +638,7 @@
       localStorage.setItem(LS_LAST_CHECK, String(Date.now()));
       showToast('Checking for updates…');
       try{
-        const meta = await getLatestMeta(); // {version, zipUrl, source, size}
+        const meta = await getLatestMeta();
         const current = localStorage.getItem(LS_REV) || '';
         if (meta.version && meta.version !== current){
           setDialog(meta);
@@ -687,7 +647,6 @@
         }
       }catch(e){
         console.warn('Update check failed:', e);
-        // Only show a subtle notice; not a blocking dialog
         showToast(`Update check failed: ${e.message}`);
         setTimeout(hideToast, 2500);
       }finally{
@@ -695,11 +654,11 @@
       }
     }
 
-    // Wire dialog buttons
+    // Dialog wiring
     btnClose.onclick = () => updDlg.close();
     btnLater.onclick = () => updDlg.close();
 
-    btnPick.onclick = async ()=>{
+    $('#updPickBtn').onclick = async ()=>{
       try{
         const picked = await pickExistingZip() || await pickSaveZip();
         if (picked){ await idb.set('zipHandle', picked); updStatus.textContent = 'Location saved.'; }
@@ -762,15 +721,12 @@
       document.addEventListener('visibilitychange', () => { if (!document.hidden) ensureUpToDate(false); });
       setInterval(()=> ensureUpToDate(false), CHECK_INTERVAL_MS);
 
-      // Debug: press Shift+U to force check now
+      // Debug shortcut: Shift+U to force a check
       window.addEventListener('keydown', (ev)=>{
         if (ev.shiftKey && (ev.key==='U' || ev.key==='u')) ensureUpToDate(true);
       });
     })();
-    </script>
-    <!-- ----------------- END AUTO-UPDATE ----------------- -->
-
-   
+    /* ---------------- END AUTO-UPDATE ---------------- */
 
     // Init UI
     $('#searchInput').addEventListener('input', render);
