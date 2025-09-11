@@ -313,6 +313,11 @@
         image:'https://eggycar.co/data/image/image.png',
         description:'Dont let your egg break.',
         genres:['Action','Strategic'], release:'2025-09-08' },
+      
+      { title:'Eggy Car', url:'https://webglmath.github.io/eggy-car/',
+        image:'https://eggycar.co/data/image/image.png',
+        description:'Dont let your egg break.',
+        genres:['Action','Strategic'], release:'2025-09-08' },
     ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
 
     /* ---------------- Install UI (recommended only) ---------------- */
