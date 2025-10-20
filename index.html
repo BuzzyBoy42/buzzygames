@@ -7,15 +7,9 @@
 <meta name="theme-color" content="#0a0a0a" />
 <style>
   :root{
-    /* Black & white with a hint of orange */
-    --bg:#0a0a0a;         /* page background (near-black) */
-    --surface:#101010;    /* surfaces (cards/nav) */
-    --card:#141414;       /* card fill */
-    --muted:#cfcfcf;      /* muted text */
-    --text:#f5f5f5;       /* main text */
-    --accent:#ff7a18;     /* subtle orange accent */
-    --border:rgba(255,255,255,.08);
-    --shadow:0 16px 40px rgba(0,0,0,.35);
+    --bg:#0a0a0a; --surface:#101010; --card:#141414;
+    --muted:#cfcfcf; --text:#f5f5f5; --accent:#ff7a18;
+    --border:rgba(255,255,255,.08); --shadow:0 16px 40px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -24,121 +18,52 @@
     color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;
   }
   a{color:inherit;text-decoration:none}
-
-  /* Top Nav */
-  .nav{
-    position:sticky;top:0;z-index:50;
-    backdrop-filter:saturate(130%) blur(10px);
-    background:color-mix(in srgb, var(--surface) 90%, transparent);
-    border-bottom:1px solid var(--border);
-  }
-  .nav-inner{
-    max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:14px 16px;
-  }
+  .nav{position:sticky;top:0;z-index:50;backdrop-filter:saturate(130%) blur(10px);background:color-mix(in srgb, var(--surface) 90%, transparent);border-bottom:1px solid var(--border)}
+  .nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:14px 16px}
   .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.25px}
-  .dot{
-    width:12px;height:12px;border-radius:999px;
-    background:var(--accent);
-    box-shadow:0 0 0 4px rgba(255,122,24,.15), 0 0 20px rgba(255,122,24,.35);
-  }
+  .dot{width:12px;height:12px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px rgba(255,122,24,.15), 0 0 20px rgba(255,122,24,.35)}
   .spacer{flex:1}
-  .pill{
-    display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;
-    padding:8px 12px;background:var(--surface);font-size:13px;color:var(--muted)
-  }
+  .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:8px 12px;background:var(--surface);font-size:13px;color:var(--muted)}
   .tabs{display:flex;gap:8px}
-  .tab-btn{
-    border:1px solid var(--border);background:var(--surface);color:var(--text);
-    padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px;opacity:.9
-  }
-  .tab-btn.active{
-    background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 35%, #000 65%), var(--surface));
-    border-color:color-mix(in srgb, var(--accent) 40%, var(--border));
-  }
-
+  .tab-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px;opacity:.9}
+  .tab-btn.active{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 35%, #000 65%), var(--surface));border-color:color-mix(in srgb, var(--accent) 40%, var(--border))}
   .wrap{max-width:1240px;margin:20px auto;padding:0 16px}
-  .section{display:none}
-  .section.active{display:block}
-
-  /* Toolbar */
+  .section{display:none}.section.active{display:block}
   .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 18px}
-  .search{
-    flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
-    padding:12px 14px;border-radius:14px;
-  }
+  .search{flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:12px 14px;border-radius:14px}
   .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px}
-
-  /* Grid — bigger cards */
-  .grid{
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;
-  }
-  .card{
-    position:relative;border:1px solid var(--border);background:var(--card);
-    border-radius:18px;overflow:hidden;box-shadow:var(--shadow);
-    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
-  }
-  .card:hover{
-    transform:translateY(-3px);
-    border-color:color-mix(in srgb, var(--accent) 35%, var(--border));
-    box-shadow:0 20px 50px rgba(0,0,0,.45);
-  }
-  .cover{
-    aspect-ratio:16/9;background:#0f0f0f;display:block;width:100%;object-fit:cover
-  }
-  /* Play overlay on hover */
-  .play-overlay{
-    position:absolute;inset:0;display:grid;place-items:center;
-    background:linear-gradient(180deg, transparent, rgba(0,0,0,.45) 60%);
-    opacity:0;transition:opacity .18s ease;
-  }
+  .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
+  .card{position:relative;border:1px solid var(--border);background:var(--card);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
+  .card:hover{transform:translateY(-3px);border-color:color-mix(in srgb, var(--accent) 35%, var(--border));box-shadow:0 20px 50px rgba(0,0,0,.45)}
+  .cover{aspect-ratio:16/9;background:#0f0f0f;display:block;width:100%;object-fit:cover}
+  .play-overlay{position:absolute;inset:0;display:grid;place-items:center;background:linear-gradient(180deg, transparent, rgba(0,0,0,.45) 60%);opacity:0;transition:opacity .18s ease}
   .card:hover .play-overlay{opacity:1}
-  .play-btn{
-    background:var(--accent);color:#000;font-weight:900;border:0;border-radius:999px;padding:10px 16px;cursor:pointer
-  }
+  .play-btn{background:var(--accent);color:#000;font-weight:900;border:0;border-radius:999px;padding:10px 16px;cursor:pointer}
   .card-body{padding:12px 14px}
   .name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
   .meta{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
-  .badge{
-    font-size:12px;border:1px solid var(--border);background:#0f0f0f;padding:6px 10px;border-radius:999px;opacity:.95;color:var(--muted)
-  }
+  .badge{font-size:12px;border:1px solid var(--border);background:#0f0f0f;padding:6px 10px;border-radius:999px;opacity:.95;color:var(--muted)}
   .badge.orange{border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); color:var(--text)}
   .empty{opacity:.75;text-align:center;padding:42px 0;color:var(--muted)}
-
-  /* Drops */
-  .drop{
-    border:1px solid var(--border);background:var(--surface);border-radius:16px;
-    padding:14px 16px;display:flex;gap:16px;align-items:center
-  }
+  .drop{border:1px solid var(--border);background:var(--surface);border-radius:16px;padding:14px 16px;display:flex;gap:16px;align-items:center}
   .drop .title{font-weight:900}
   .countdown{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent)}
-
-  /* Analytics */
   .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
-  .stat{
-    border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:16px
-  }
+  .stat{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:16px}
   .stat h3{margin:0 0 8px 0;font-size:14px;color:var(--muted)}
   .list{display:grid;gap:8px;margin-top:8px}
   .row{display:flex;justify-content:space-between;gap:10px}
   .mono{font-variant-numeric:tabular-nums}
-
-  /* Admin */
   .admin-wrap{display:grid;gap:16px}
   .panel{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:16px}
   .panel h3{margin-top:0}
   .field{display:grid;gap:6px;margin:8px 0}
   .field input{background:#0f0f0f;border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text)}
-  .btn{
-    background:var(--accent);color:#000;border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer
-  }
+  .btn{background:var(--accent);color:#000;border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
   .btn.secondary{background:#0f0f0f;border:1px solid var(--border);color:var(--text);font-weight:700}
-
-  /* Modals */
   .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6)}
   .modal.show{display:flex}
-  .modal-card{
-    width:min(560px,92vw);border:1px solid var(--border);background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:18px
-  }
+  .modal-card{width:min(560px,92vw);border:1px solid var(--border);background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:18px}
   .modal-card h2{margin-top:0}
   .code-input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:#0f0f0f;color:var(--text)}
   .small{font-size:12px;color:var(--muted)}
@@ -273,11 +198,10 @@
   </div>
 
 <script type="module">
-  /* Firebase */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
   import {
-    getFirestore, collection, addDoc, setDoc, doc, getDoc, getDocs,
+    getFirestore, collection, collectionGroup, addDoc, setDoc, doc, getDocs,
     updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit,
     serverTimestamp, increment
   } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
@@ -298,102 +222,71 @@
 
   /* Utils */
   const $ = s => document.querySelector(s);
-  const el = (tag, attrs={}, children=[]) => {
-    const n = document.createElement(tag);
-    Object.entries(attrs).forEach(([k,v]) => (k==='class'? n.className=v : n.setAttribute(k,v)));
-    children.forEach(c => n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
-    return n;
-  };
+  const el = (tag, attrs={}, children=[]) => { const n=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>k==='class'?n.className=v:n.setAttribute(k,v)); children.forEach(c=>n.appendChild(typeof c==='string'?document.createTextNode(c):c)); return n; };
   const monthKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
   const lastDayOfMonth = (d=new Date()) => new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  const cutoffMs = () => Date.now() - 60_000; // 60s window for "playing"
 
-  /* Session ID + site presence */
-  const sessionId = (() => {
-    let id = localStorage.getItem('bz_session');
-    if(!id){ id = crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id); }
-    return id;
-  })();
+  /* Identify session */
+  const sessionId = (() => { let id = localStorage.getItem('bz_session'); if(!id){ id = crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id); } return id; })();
 
-  async function startSitePresence(){
+  /* Site-wide presence (accurate: compute by dynamic cutoff) */
+  function startSitePresence(){
     const ref = doc(db, 'sitePresence', sessionId);
-    await setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
-    setInterval(async () => {
-      await setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
-    }, 25000);
+    setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
+    setInterval(()=> setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true }), 25_000);
 
-    const threshold = new Date(Date.now() - 60000); // last 60s
-    const qy = query(collection(db, 'sitePresence'), where('lastSeen','>=', threshold));
-    onSnapshot(qy, snap => {
-      const count = snap.size;
+    onSnapshot(collection(db, 'sitePresence'), snap=>{
+      const cutoff = cutoffMs();
+      let count = 0;
+      snap.forEach(d=>{
+        const t = d.data().lastSeen;
+        const ms = t?.toMillis ? t.toMillis() : (t?.seconds ? t.seconds*1000 : 0);
+        if(ms >= cutoff) count++;
+      });
       $('#onlineCount').textContent = count;
       $('#onlineCount2').textContent = count;
     });
   }
 
   /* Tabs */
-  const tabsEl = $('#tabs');
   const sections = document.querySelectorAll('.section');
-  tabsEl.addEventListener('click', e => {
-    const btn = e.target.closest('.tab-btn');
-    if(!btn) return;
-    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b===btn));
-    const tab = btn.getAttribute('data-tab');
-    sections.forEach(s => s.classList.toggle('active', s.id === tab));
-    if(tab === 'analytics'){ loadAnalytics(); }
+  $('#tabs').addEventListener('click', e=>{
+    const btn = e.target.closest('.tab-btn'); if(!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b=>b.classList.toggle('active', b===btn));
+    const tab = btn.dataset.tab;
+    sections.forEach(s=>s.classList.toggle('active', s.id===tab));
+    if(tab==='analytics') loadAnalytics();
   });
 
   /* Admin unlock */
-  const ADMIN_CODE = 'buzzygamesadmin2025';
-  function isAdmin(){ return localStorage.getItem('bz_admin') === '1'; }
-  function setAdmin(v){
-    if(v){ localStorage.setItem('bz_admin','1'); } else { localStorage.removeItem('bz_admin'); }
-    $('#adminTab').style.display = v ? '' : 'none';
-    if(v){ $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; }
-  }
-  function toggleUnlock(show){
-    $('#unlockModal').classList.toggle('show', !!show);
-    if(show){ setTimeout(()=>$('#unlockInput').focus(),50); }
-  }
+  const ADMIN_CODE='buzzygamesadmin2025';
+  function isAdmin(){ return localStorage.getItem('bz_admin')==='1'; }
+  function setAdmin(v){ if(v){ localStorage.setItem('bz_admin','1'); } else { localStorage.removeItem('bz_admin'); } $('#adminTab').style.display=v?'':'none'; if(v){ $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } }
+  function toggleUnlock(show){ $('#unlockModal').classList.toggle('show', !!show); if(show){ setTimeout(()=>$('#unlockInput').focus(),50); } }
   $('#unlockBtn').addEventListener('click', ()=>toggleUnlock(true));
-  $('#unlockConfirm').addEventListener('click', ()=>{
-    const code = $('#unlockInput').value.trim();
-    if(code === ADMIN_CODE){ setAdmin(true); toggleUnlock(false); $('#adminTab').click(); }
-    else { alert('Incorrect code.'); }
-  });
+  $('#unlockConfirm').addEventListener('click', ()=>{ const code=$('#unlockInput').value.trim(); if(code===ADMIN_CODE){ setAdmin(true); toggleUnlock(false); $('#adminTab').click(); } else alert('Incorrect code.'); });
   if(isAdmin()) setAdmin(true);
-  document.querySelector('[data-tab="admin"]').addEventListener?.('click', ()=>{
-    if(!isAdmin()){
-      $('#adminGate').style.display='block';
-      $('#adminWrap').style.display='none';
-    } else {
-      $('#adminGate').style.display='none';
-      $('#adminWrap').style.display='grid';
-    }
-  });
-  $('#adminUnlockConfirm')?.addEventListener('click', ()=>{
-    const code = $('#adminCodeInput').value.trim();
-    if(code === ADMIN_CODE){ setAdmin(true); $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; }
-    else alert('Incorrect code.');
-  });
-  $('#adminUnlockCancel')?.addEventListener('click', ()=>{ $('#adminTab').click(); });
+  document.querySelector('[data-tab="admin"]').addEventListener?.('click', ()=>{ if(!isAdmin()){ $('#adminGate').style.display='block'; $('#adminWrap').style.display='none'; } else { $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } });
+  $('#adminUnlockConfirm')?.addEventListener('click', ()=>{ const code=$('#adminCodeInput').value.trim(); if(code===ADMIN_CODE){ setAdmin(true); $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } else alert('Incorrect code.'); });
+  $('#adminUnlockCancel')?.addEventListener('click', ()=>$('#adminTab').click());
 
-  /* Browse */
+  /* Browse: render + live Playing counts via presence */
   let allGames = [];
-  const grid = $('#gameGrid'); const emptyMsg = $('#emptyMsg');
+  let nowCounts = {}; // { gameId: number }
 
+  const grid = $('#gameGrid'); const emptyMsg = $('#emptyMsg');
   function renderGames(list){
-    grid.innerHTML = '';
-    if(!list.length){ emptyMsg.style.display='block'; return; }
-    emptyMsg.style.display='none';
+    grid.innerHTML=''; if(!list.length){ emptyMsg.style.display='block'; return; } emptyMsg.style.display='none';
     list.forEach(g=>{
-      const card = el('a', { class:'card', href:`embed.html?id=${g.id}`, title:g.name });
-      const img = el('img', { class:'cover', src:g.coverUrl || '', alt:g.name, onerror:"this.src='';this.style.background='#111'" });
+      const card = el('a', { class:'card', href:`embed.html?id=${g.id}`, title:g.name, 'data-id': g.id });
+      const img = el('img', { class:'cover', src:g.coverUrl||'', alt:g.name, onerror:"this.src='';this.style.background='#111'" });
       const overlay = el('div', { class:'play-overlay' }, [ el('button', { class:'play-btn' }, ['Play']) ]);
       const body = el('div', { class:'card-body' }, [
-        el('div', { class:'name' }, [g.name || 'Untitled']),
+        el('div', { class:'name' }, [g.name||'Untitled']),
         el('div', { class:'meta' }, [
           el('span', { class:'badge' }, [`Plays: ${g.plays ?? 0}`]),
-          el('span', { class:'badge orange' }, [`Playing: ${g.currentPlayers ?? 0}`]),
+          el('span', { class:'badge orange playing-badge' }, [`Playing: ${nowCounts[g.id] || 0}`]),
         ])
       ]);
       card.append(img, overlay, body);
@@ -401,17 +294,18 @@
     });
   }
 
-  function applySearch(){
-    const q = $('#searchInput').value.toLowerCase().trim();
-    if(!q) return renderGames(allGames);
-    renderGames(allGames.filter(g => (g.name||'').toLowerCase().includes(q)));
+  function updatePlayingBadges(){
+    document.querySelectorAll('.card').forEach(card=>{
+      const id = card.getAttribute('data-id');
+      const badge = card.querySelector('.playing-badge');
+      if(badge) badge.textContent = `Playing: ${nowCounts[id] || 0}`;
+    });
   }
-  $('#searchInput').addEventListener('input', applySearch);
 
+  // Listen to games collection
   const gamesRef = collection(db, 'games');
-  const gamesQuery = query(gamesRef, orderBy('name'));
-  onSnapshot(gamesQuery, snap=>{
-    allGames = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+  onSnapshot(query(gamesRef, orderBy('name')), snap=>{
+    allGames = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     renderGames(allGames);
     $('#totalGames').textContent = allGames.length;
     const total = allGames.reduce((s,g)=> s + (Number(g.plays)||0), 0);
@@ -419,161 +313,92 @@
     if(isAdmin()) renderAdminGames(allGames);
   });
 
+  // LIVE presence across all games -> compute counts by dynamic cutoff
+  onSnapshot(collection(db, 'gameSessions'), snap=>{
+    const cutoff = cutoffMs();
+    const counts = {};
+    snap.forEach(d=>{
+      const x = d.data();
+      if(!x?.gameId || !x?.lastSeen) return;
+      const ms = x.lastSeen.toMillis ? x.lastSeen.toMillis() : (x.lastSeen.seconds? x.lastSeen.seconds*1000 : 0);
+      if(ms >= cutoff) counts[x.gameId] = (counts[x.gameId]||0)+1;
+    });
+    nowCounts = counts;
+    updatePlayingBadges();
+  });
+  // Recompute every second so sessions expire visually even without new writes
+  setInterval(updatePlayingBadges, 1000);
+
   /* Drops */
   const dropsRef = collection(db, 'drops');
-  const dropsQuery = query(dropsRef, orderBy('startAt', 'asc'));
-  let dropIntervals = [];
-  function clearDropIntervals(){ dropIntervals.forEach(id=>clearInterval(id)); dropIntervals=[]; }
-
-  function fmtCountdown(ms){
-    if(ms <= 0) return 'LIVE';
-    const s = Math.floor(ms/1000);
-    const d = Math.floor(s/86400);
-    const h = Math.floor((s%86400)/3600);
-    const m = Math.floor((s%3600)/60);
-    const ss = s%60;
-    return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
-  }
-
-  function renderDrops(docs, intoList, isAdmin=false){
-    intoList.innerHTML = '';
-    if(!docs.length){
-      if(intoList.id==='dropsList') $('#dropsEmpty').style.display='block';
-      return;
-    }
-    $('#dropsEmpty').style.display='none';
-    docs.forEach(d=>{
-      const data = d.data(); const id = d.id;
-      const row = el('div', { class:'drop' });
-      if(data.coverUrl){
-        const img = el('img', { src:data.coverUrl, alt:data.title, style:'width:88px;height:56px;object-fit:cover;border-radius:12px;border:1px solid var(--border)' });
-        row.appendChild(img);
-      }
-      const info = el('div', {}, [
-        el('div', { class:'title' }, [data.title || 'Untitled Drop']),
-        el('div', { class:'small' }, [ data.gameId ? `Game: ${data.gameId}` : 'General event'])
-      ]);
-      const cd = el('div', { class:'countdown mono' }, ['…']);
-      row.append(info, cd);
-      if(isAdmin){
-        const del = el('button', { class:'btn secondary', style:'margin-left:10px' }, ['Delete']);
-        del.addEventListener('click', async ()=>{ await deleteDoc(doc(db,'drops',id)); });
-        row.appendChild(del);
-      }
-      intoList.appendChild(row);
-
-      const tick = ()=>{
-        const now = Date.now();
-        const start = data.startAt?.toMillis ? data.startAt.toMillis() : (data.startAt || 0);
-        const end = data.endAt?.toMillis ? data.endAt.toMillis() : (data.endAt || null);
-        if(now < start) cd.textContent = fmtCountdown(start - now);
-        else if(end && now <= end) cd.textContent = 'LIVE';
-        else cd.textContent = 'Ended';
-      };
-      tick();
-      const iid = setInterval(tick, 1000);
-      dropIntervals.push(iid);
+  onSnapshot(query(dropsRef, orderBy('startAt','asc')), snap=>{
+    const listEl = $('#dropsList'); listEl.innerHTML='';
+    if(snap.empty){ $('#dropsEmpty').style.display='block'; return; } $('#dropsEmpty').style.display='none';
+    snap.docs.forEach(d=>{
+      const x = d.data();
+      const row = el('div',{class:'drop'});
+      if(x.coverUrl) row.appendChild(el('img',{src:x.coverUrl,alt:x.title,style:'width:88px;height:56px;object-fit:cover;border-radius:12px;border:1px solid var(--border)'}));
+      const info = el('div',{},[el('div',{class:'title'},[x.title||'Untitled Drop']), el('div',{class:'small'},[x.gameId?`Game: ${x.gameId}`:'General event'])]);
+      const cd = el('div',{class:'countdown mono'},['…']);
+      row.append(info,cd); listEl.appendChild(row);
+      const tick=()=>{ const now=Date.now(); const s=x.startAt?.toMillis?x.startAt.toMillis():x.startAt||0; const e=x.endAt?.toMillis?x.endAt.toMillis():x.endAt||null;
+        if(now<s) cd.textContent = fmtCountdown(s-now); else if(e && now<=e) cd.textContent='LIVE'; else cd.textContent='Ended'; };
+      const fmtCountdown=ms=>{ if(ms<=0) return 'LIVE'; const s=Math.floor(ms/1000), d=Math.floor(s/86400), h=Math.floor((s%86400)/3600), m=Math.floor((s%3600)/60), ss=s%60; return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;}
+      tick(); setInterval(tick,1000);
     });
-  }
-
-  onSnapshot(dropsQuery, snap=>{
-    clearDropIntervals();
-    renderDrops(snap.docs, $('#dropsList'));
-    if(isAdmin()) renderDrops(snap.docs, $('#adminDrops'), true);
   });
 
   /* Analytics */
   async function loadAnalytics(){
     const mk = monthKey(new Date());
-    const monthQuery = query(collection(db, 'monthlyPlays'), where('month','==', mk), orderBy('count','desc'), limit(10));
-    const monthSnap = await getDocs(monthQuery);
+    const monthSnap = await getDocs(query(collection(db,'monthlyPlays'), where('month','==',mk), orderBy('count','desc'), limit(10)));
     const monthList = $('#monthTopList'); monthList.innerHTML='';
-    monthSnap.forEach(d=>{
-      const x = d.data();
-      monthList.appendChild(el('div',{class:'row'},[
-        el('span',{},[x.gameName || x.gameId]),
-        el('strong',{class:'mono'},[String(x.count||0)])
-      ]));
-    });
-    if(monthSnap.empty){ monthList.innerHTML = '<div class="small">No plays yet this month.</div>'; }
+    monthSnap.forEach(d=>{ const x=d.data(); monthList.appendChild(el('div',{class:'row'},[el('span',{},[x.gameName||x.gameId]), el('strong',{class:'mono'},[String(x.count||0)])])); });
+    if(monthSnap.empty) monthList.innerHTML='<div class="small">No plays yet this month.</div>';
 
     const allList = $('#allTimeList'); allList.innerHTML='';
     const allSorted = [...allGames].sort((a,b)=> (b.plays||0)-(a.plays||0)).slice(0,10);
-    allSorted.forEach(g=>{
-      allList.appendChild(el('div',{class:'row'},[
-        el('span',{},[g.name||'Untitled']),
-        el('strong',{class:'mono'},[String(g.plays||0)])
-      ]));
-    });
-    if(!allSorted.length){ allList.innerHTML = '<div class="small">No games yet.</div>'; }
+    allSorted.forEach(g=> allList.appendChild(el('div',{class:'row'},[el('span',{},[g.name||'Untitled']), el('strong',{class:'mono'},[String(g.plays||0)])])));
+    if(!allSorted.length) allList.innerHTML='<div class="small">No games yet.</div>';
   }
 
-  /* End-of-month popup */
+  /* EOM popup */
   async function maybeShowEOM(){
-    const today = new Date();
-    if(today.getDate() !== lastDayOfMonth(today)) return;
+    const today=new Date(); const last = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+    if(today.getDate()!==last) return;
     const mk = monthKey(today);
-    const qy = query(collection(db,'monthlyPlays'), where('month','==',mk), orderBy('count','desc'), limit(1));
-    const snap = await getDocs(qy);
+    const snap = await getDocs(query(collection(db,'monthlyPlays'), where('month','==',mk), orderBy('count','desc'), limit(1)));
     const box = $('#eomContent');
-    if(snap.empty){
-      box.innerHTML = 'No gameplay recorded this month.';
-    } else {
-      const top = snap.docs[0].data();
-      box.innerHTML = `
-        <div style="display:flex; gap:12px; align-items:center">
-          ${top.coverUrl ? `<img src="${top.coverUrl}" alt="" style="width:110px;height:68px;object-fit:cover;border-radius:12px;border:1px solid var(--border)"/>` : ''}
-          <div>
-            <div style="font-weight:900;font-size:18px">${top.gameName || 'Top Game'}</div>
-            <div class="small">Plays: <strong>${top.count||0}</strong> in ${mk}</div>
-          </div>
-        </div>`;
-    }
+    if(snap.empty) box.innerHTML='No gameplay recorded this month.';
+    else { const top=snap.docs[0].data(); box.innerHTML=`<div style="display:flex; gap:12px; align-items:center">${top.coverUrl?`<img src="${top.coverUrl}" style="width:110px;height:68px;object-fit:cover;border-radius:12px;border:1px solid var(--border)"/>`:''}<div><div style="font-weight:900;font-size:18px">${top.gameName||'Top Game'}</div><div class="small">Plays: <strong>${top.count||0}</strong> in ${mk}</div></div></div>`; }
     $('#eomModal').classList.add('show');
   }
 
   /* Admin actions */
   async function addGame(){
-    const name = $('#gName').value.trim();
-    const coverUrl = $('#gCover').value.trim();
-    const gameUrl = $('#gUrl').value.trim();
+    const name=$('#gName').value.trim(), coverUrl=$('#gCover').value.trim(), gameUrl=$('#gUrl').value.trim();
     if(!name || !gameUrl){ alert('Name and Game URL are required.'); return; }
-    await addDoc(collection(db,'games'), { name, coverUrl, gameUrl, plays:0, currentPlayers:0, createdAt: serverTimestamp() });
+    await addDoc(collection(db,'games'), { name, coverUrl, gameUrl, plays:0, createdAt: serverTimestamp() });
     $('#gName').value=''; $('#gCover').value=''; $('#gUrl').value='';
   }
   $('#addGameBtn').addEventListener('click', addGame);
 
   function renderAdminGames(list){
-    const box = $('#adminGames'); box.innerHTML='';
+    const box=$('#adminGames'); box.innerHTML='';
     list.forEach(g=>{
-      const row = el('div', { class:'row' }, [
-        el('span', {}, [`${g.name} `, el('span',{class:'small'},[`(#${g.id.slice(0,6)})`])]),
-        (()=>{ const wrap = el('span'); 
-          const open = el('button',{class:'btn secondary',style:'margin-right:8px'},['Open Embed']);
-          open.addEventListener('click',()=>{ location.href=`embed.html?id=${g.id}`; });
-          const del = el('button',{class:'btn secondary'},['Delete']);
-          del.addEventListener('click', async ()=>{ if(confirm('Delete this game?')) await deleteDoc(doc(db,'games',g.id)); });
-          wrap.append(open,del); return wrap; })()
+      const row = el('div',{class:'row'},[
+        el('span',{},[`${g.name} `, el('span',{class:'small'},[`(#${g.id.slice(0,6)})`])]),
+        (()=>{ const wrap=el('span'); const open=el('button',{class:'btn secondary',style:'margin-right:8px'},['Open Embed']); open.addEventListener('click',()=>location.href=`embed.html?id=${g.id}`); const del=el('button',{class:'btn secondary'},['Delete']); del.addEventListener('click',async()=>{ if(confirm('Delete this game?')) await deleteDoc(doc(db,'games',g.id)); }); wrap.append(open,del); return wrap; })()
       ]);
       box.appendChild(row);
     });
   }
 
   async function createDrop(){
-    const title = $('#dTitle').value.trim();
-    const gameId = $('#dGameId').value.trim();
-    const coverUrl = $('#dCover').value.trim();
-    const startVal = $('#dStart').value;
+    const title=$('#dTitle').value.trim(), gameId=$('#dGameId').value.trim(), coverUrl=$('#dCover').value.trim(), startVal=$('#dStart').value, endVal=$('#dEnd').value;
     if(!title || !startVal){ alert('Title and start time are required.'); return; }
-    const endVal = $('#dEnd').value;
-    const payload = {
-      title, gameId: gameId || null, coverUrl: coverUrl || null,
-      startAt: new Date(startVal), endAt: endVal ? new Date(endVal) : null,
-      createdAt: serverTimestamp()
-    };
-    await addDoc(collection(db,'drops'), payload);
-    $('#dTitle').value=''; $('#dGameId').value=''; $('#dCover').value='';
-    $('#dStart').value=''; $('#dEnd').value='';
+    await addDoc(collection(db,'drops'), { title, gameId: gameId||null, coverUrl: coverUrl||null, startAt:new Date(startVal), endAt:endVal?new Date(endVal):null, createdAt: serverTimestamp() });
+    $('#dTitle').value=''; $('#dGameId').value=''; $('#dCover').value=''; $('#dStart').value=''; $('#dEnd').value='';
   }
   $('#createDropBtn').addEventListener('click', createDrop);
 
