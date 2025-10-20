@@ -7,19 +7,30 @@
 <meta name="theme-color" content="#0a0a0a" />
 <style>
   :root{
+    /* Black/white with subtle orange accents */
     --bg:#0a0a0a; --surface:#101010; --card:#141414;
-    --muted:#cfcfcf; --text:#f5f5f5; --accent:#ff7a18;
+    --text:#f5f5f5; --muted:#cfcfcf; --accent:#ff7a18;
     --border:rgba(255,255,255,.08); --shadow:0 16px 40px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;background:radial-gradient(1200px 800px at 70% -10%, rgba(255,122,24,.08), transparent 50%), var(--bg);
-    color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+    margin:0;
+    background:radial-gradient(1200px 800px at 70% -10%, rgba(255,122,24,.08), transparent 50%), var(--bg);
+    color:var(--text);
+    font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;
   }
   a{color:inherit;text-decoration:none}
-  .nav{position:sticky;top:0;z-index:50;backdrop-filter:saturate(130%) blur(10px);background:color-mix(in srgb, var(--surface) 90%, transparent);border-bottom:1px solid var(--border)}
-  .nav-inner{max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:14px 16px}
+
+  .nav{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:saturate(130%) blur(10px);
+    background:color-mix(in srgb, var(--surface) 90%, transparent);
+    border-bottom:1px solid var(--border)
+  }
+  .nav-inner{
+    max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:14px 16px
+  }
   .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.25px}
   .dot{width:12px;height:12px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px rgba(255,122,24,.15), 0 0 20px rgba(255,122,24,.35)}
   .spacer{flex:1}
@@ -27,11 +38,15 @@
   .tabs{display:flex;gap:8px}
   .tab-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px;opacity:.9}
   .tab-btn.active{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 35%, #000 65%), var(--surface));border-color:color-mix(in srgb, var(--accent) 40%, var(--border))}
+
   .wrap{max-width:1240px;margin:20px auto;padding:0 16px}
   .section{display:none}.section.active{display:block}
+
   .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 18px}
   .search{flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:12px 14px;border-radius:14px}
   .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px}
+
+  /* Larger cards */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
   .card{position:relative;border:1px solid var(--border);background:var(--card);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
   .card:hover{transform:translateY(-3px);border-color:color-mix(in srgb, var(--accent) 35%, var(--border));box-shadow:0 20px 50px rgba(0,0,0,.45)}
@@ -45,6 +60,8 @@
   .badge{font-size:12px;border:1px solid var(--border);background:#0f0f0f;padding:6px 10px;border-radius:999px;opacity:.95;color:var(--muted)}
   .badge.orange{border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); color:var(--text)}
   .empty{opacity:.75;text-align:center;padding:42px 0;color:var(--muted)}
+
+  /* Drops & Analytics */
   .drop{border:1px solid var(--border);background:var(--surface);border-radius:16px;padding:14px 16px;display:flex;gap:16px;align-items:center}
   .drop .title{font-weight:900}
   .countdown{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent)}
@@ -54,6 +71,8 @@
   .list{display:grid;gap:8px;margin-top:8px}
   .row{display:flex;justify-content:space-between;gap:10px}
   .mono{font-variant-numeric:tabular-nums}
+
+  /* Admin */
   .admin-wrap{display:grid;gap:16px}
   .panel{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:16px}
   .panel h3{margin-top:0}
@@ -61,6 +80,8 @@
   .field input{background:#0f0f0f;border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text)}
   .btn{background:var(--accent);color:#000;border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer}
   .btn.secondary{background:#0f0f0f;border:1px solid var(--border);color:var(--text);font-weight:700}
+
+  /* Modals */
   .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6)}
   .modal.show{display:flex}
   .modal-card{width:min(560px,92vw);border:1px solid var(--border);background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:18px}
@@ -198,13 +219,17 @@
   </div>
 
 <script type="module">
+  /* Firebase */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
   import {
-    getFirestore, collection, collectionGroup, addDoc, setDoc, doc, getDocs,
+    getFirestore, collection, addDoc, setDoc, doc, getDocs,
     updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit,
     serverTimestamp, increment
   } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+  import {
+    getDatabase, ref as dref, onValue, onDisconnect, set as dset, remove as dremove
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBI7amPbyDP4cgtWvoooGz9JQAPXJEpCaE",
@@ -213,43 +238,22 @@
     storageBucket: "buzzy-games.firebasestorage.app",
     messagingSenderId: "1019717198169",
     appId: "1:1019717198169:web:8bff09527755e2672c6c48",
-    measurementId: "G-JPPBF2PHDJ"
+    measurementId: "G-JPPBF2PHDJ",
+    databaseURL: "https://buzzy-games-default-rtdb.firebaseio.com"
   };
 
   const app = initializeApp(firebaseConfig);
   try { getAnalytics(app); } catch(e){}
   const db = getFirestore(app);
+  const rtdb = getDatabase(app);
 
   /* Utils */
   const $ = s => document.querySelector(s);
   const el = (tag, attrs={}, children=[]) => { const n=document.createElement(tag); Object.entries(attrs).forEach(([k,v])=>k==='class'?n.className=v:n.setAttribute(k,v)); children.forEach(c=>n.appendChild(typeof c==='string'?document.createTextNode(c):c)); return n; };
   const monthKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
   const lastDayOfMonth = (d=new Date()) => new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
-  const cutoffMs = () => Date.now() - 60_000; // 60s window for "playing"
 
-  /* Identify session */
-  const sessionId = (() => { let id = localStorage.getItem('bz_session'); if(!id){ id = crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id); } return id; })();
-
-  /* Site-wide presence (accurate: compute by dynamic cutoff) */
-  function startSitePresence(){
-    const ref = doc(db, 'sitePresence', sessionId);
-    setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
-    setInterval(()=> setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true }), 25_000);
-
-    onSnapshot(collection(db, 'sitePresence'), snap=>{
-      const cutoff = cutoffMs();
-      let count = 0;
-      snap.forEach(d=>{
-        const t = d.data().lastSeen;
-        const ms = t?.toMillis ? t.toMillis() : (t?.seconds ? t.seconds*1000 : 0);
-        if(ms >= cutoff) count++;
-      });
-      $('#onlineCount').textContent = count;
-      $('#onlineCount2').textContent = count;
-    });
-  }
-
-  /* Tabs */
+  /* Basic nav + tabs */
   const sections = document.querySelectorAll('.section');
   $('#tabs').addEventListener('click', e=>{
     const btn = e.target.closest('.tab-btn'); if(!btn) return;
@@ -271,22 +275,40 @@
   $('#adminUnlockConfirm')?.addEventListener('click', ()=>{ const code=$('#adminCodeInput').value.trim(); if(code===ADMIN_CODE){ setAdmin(true); $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } else alert('Incorrect code.'); });
   $('#adminUnlockCancel')?.addEventListener('click', ()=>$('#adminTab').click());
 
-  /* Browse: render + live Playing counts via presence */
-  let allGames = [];
-  let nowCounts = {}; // { gameId: number }
+  /* Presence — SITE (accurate via RTDB + onDisconnect) */
+  const sitePageId = (crypto.randomUUID?.() || ('page_'+Math.random().toString(36).slice(2)));
+  const siteRef = dref(rtdb, `presence/site/${sitePageId}`);
+  // create presence entry and auto-remove on disconnect
+  dset(siteRef, true);
+  onDisconnect(siteRef).remove();
+  // live online count
+  onValue(dref(rtdb, 'presence/site'), snap=>{
+    const val = snap.val() || {};
+    const count = Object.keys(val).length;
+    $('#onlineCount').textContent = count;
+    $('#onlineCount2').textContent = count;
+  });
 
-  const grid = $('#gameGrid'); const emptyMsg = $('#emptyMsg');
+  /* Browse: games + live Playing via RTDB presence */
+  let allGames = [];
+  let playingCounts = {}; // { gameId: number }
+
+  const grid = $('#gameGrid');
+  const emptyMsg = $('#emptyMsg');
+
   function renderGames(list){
-    grid.innerHTML=''; if(!list.length){ emptyMsg.style.display='block'; return; } emptyMsg.style.display='none';
+    grid.innerHTML='';
+    if(!list.length){ emptyMsg.style.display='block'; return; }
+    emptyMsg.style.display='none';
     list.forEach(g=>{
       const card = el('a', { class:'card', href:`embed.html?id=${g.id}`, title:g.name, 'data-id': g.id });
-      const img = el('img', { class:'cover', src:g.coverUrl||'', alt:g.name, onerror:"this.src='';this.style.background='#111'" });
+      const img = el('img', { class:'cover', src:g.coverUrl || '', alt:g.name, onerror:"this.src='';this.style.background='#111'" });
       const overlay = el('div', { class:'play-overlay' }, [ el('button', { class:'play-btn' }, ['Play']) ]);
       const body = el('div', { class:'card-body' }, [
-        el('div', { class:'name' }, [g.name||'Untitled']),
+        el('div', { class:'name' }, [g.name || 'Untitled']),
         el('div', { class:'meta' }, [
           el('span', { class:'badge' }, [`Plays: ${g.plays ?? 0}`]),
-          el('span', { class:'badge orange playing-badge' }, [`Playing: ${nowCounts[g.id] || 0}`]),
+          el('span', { class:'badge orange playing-badge' }, [`Playing: ${playingCounts[g.id] || 0}`]),
         ])
       ]);
       card.append(img, overlay, body);
@@ -295,39 +317,41 @@
   }
 
   function updatePlayingBadges(){
-    document.querySelectorAll('.card').forEach(card=>{
-      const id = card.getAttribute('data-id');
-      const badge = card.querySelector('.playing-badge');
-      if(badge) badge.textContent = `Playing: ${nowCounts[id] || 0}`;
+    document.querySelectorAll('.playing-badge').forEach(badge=>{
+      const id = badge.closest('.card').getAttribute('data-id');
+      badge.textContent = `Playing: ${playingCounts[id] || 0}`;
     });
   }
 
-  // Listen to games collection
-  const gamesRef = collection(db, 'games');
-  onSnapshot(query(gamesRef, orderBy('name')), snap=>{
+  // Firestore games list
+  onSnapshot(query(collection(db,'games'), orderBy('name')), snap=>{
     allGames = snap.docs.map(d=>({ id:d.id, ...d.data() }));
     renderGames(allGames);
+    // analytics totals
     $('#totalGames').textContent = allGames.length;
     const total = allGames.reduce((s,g)=> s + (Number(g.plays)||0), 0);
     $('#totalPlays').textContent = total.toLocaleString();
     if(isAdmin()) renderAdminGames(allGames);
   });
 
-  // LIVE presence across all games -> compute counts by dynamic cutoff
-  onSnapshot(collection(db, 'gameSessions'), snap=>{
-    const cutoff = cutoffMs();
+  // RTDB: listen to all game presences and compute counts live
+  onValue(dref(rtdb, 'presence/game'), snap=>{
+    const data = snap.val() || {};
     const counts = {};
-    snap.forEach(d=>{
-      const x = d.data();
-      if(!x?.gameId || !x?.lastSeen) return;
-      const ms = x.lastSeen.toMillis ? x.lastSeen.toMillis() : (x.lastSeen.seconds? x.lastSeen.seconds*1000 : 0);
-      if(ms >= cutoff) counts[x.gameId] = (counts[x.gameId]||0)+1;
-    });
-    nowCounts = counts;
+    for(const gid in data){
+      counts[gid] = Object.keys(data[gid] || {}).length;
+    }
+    playingCounts = counts;
     updatePlayingBadges();
   });
-  // Recompute every second so sessions expire visually even without new writes
-  setInterval(updatePlayingBadges, 1000);
+
+  // Search
+  function applySearch(){
+    const q = $('#searchInput').value.toLowerCase().trim();
+    if(!q) return renderGames(allGames);
+    renderGames(allGames.filter(g => (g.name||'').toLowerCase().includes(q)));
+  }
+  $('#searchInput').addEventListener('input', applySearch);
 
   /* Drops */
   const dropsRef = collection(db, 'drops');
@@ -341,9 +365,9 @@
       const info = el('div',{},[el('div',{class:'title'},[x.title||'Untitled Drop']), el('div',{class:'small'},[x.gameId?`Game: ${x.gameId}`:'General event'])]);
       const cd = el('div',{class:'countdown mono'},['…']);
       row.append(info,cd); listEl.appendChild(row);
+      const fmtCountdown=ms=>{ if(ms<=0) return 'LIVE'; const s=Math.floor(ms/1000), d=Math.floor(s/86400), h=Math.floor((s%86400)/3600), m=Math.floor((s%3600)/60), ss=s%60; return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;}
       const tick=()=>{ const now=Date.now(); const s=x.startAt?.toMillis?x.startAt.toMillis():x.startAt||0; const e=x.endAt?.toMillis?x.endAt.toMillis():x.endAt||null;
         if(now<s) cd.textContent = fmtCountdown(s-now); else if(e && now<=e) cd.textContent='LIVE'; else cd.textContent='Ended'; };
-      const fmtCountdown=ms=>{ if(ms<=0) return 'LIVE'; const s=Math.floor(ms/1000), d=Math.floor(s/86400), h=Math.floor((s%86400)/3600), m=Math.floor((s%3600)/60), ss=s%60; return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;}
       tick(); setInterval(tick,1000);
     });
   });
@@ -362,10 +386,9 @@
     if(!allSorted.length) allList.innerHTML='<div class="small">No games yet.</div>';
   }
 
-  /* EOM popup */
+  /* End-of-month popup */
   async function maybeShowEOM(){
-    const today=new Date(); const last = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
-    if(today.getDate()!==last) return;
+    const today=new Date(); if(today.getDate()!==lastDayOfMonth(today)) return;
     const mk = monthKey(today);
     const snap = await getDocs(query(collection(db,'monthlyPlays'), where('month','==',mk), orderBy('count','desc'), limit(1)));
     const box = $('#eomContent');
@@ -373,6 +396,7 @@
     else { const top=snap.docs[0].data(); box.innerHTML=`<div style="display:flex; gap:12px; align-items:center">${top.coverUrl?`<img src="${top.coverUrl}" style="width:110px;height:68px;object-fit:cover;border-radius:12px;border:1px solid var(--border)"/>`:''}<div><div style="font-weight:900;font-size:18px">${top.gameName||'Top Game'}</div><div class="small">Plays: <strong>${top.count||0}</strong> in ${mk}</div></div></div>`; }
     $('#eomModal').classList.add('show');
   }
+  maybeShowEOM();
 
   /* Admin actions */
   async function addGame(){
@@ -393,18 +417,12 @@
       box.appendChild(row);
     });
   }
-
-  async function createDrop(){
+  $('#createDropBtn').addEventListener('click', async ()=>{
     const title=$('#dTitle').value.trim(), gameId=$('#dGameId').value.trim(), coverUrl=$('#dCover').value.trim(), startVal=$('#dStart').value, endVal=$('#dEnd').value;
     if(!title || !startVal){ alert('Title and start time are required.'); return; }
     await addDoc(collection(db,'drops'), { title, gameId: gameId||null, coverUrl: coverUrl||null, startAt:new Date(startVal), endAt:endVal?new Date(endVal):null, createdAt: serverTimestamp() });
     $('#dTitle').value=''; $('#dGameId').value=''; $('#dCover').value=''; $('#dStart').value=''; $('#dEnd').value='';
-  }
-  $('#createDropBtn').addEventListener('click', createDrop);
-
-  /* Init */
-  startSitePresence();
-  maybeShowEOM();
+  });
 </script>
 </body>
 </html>
