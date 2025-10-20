@@ -7,10 +7,10 @@
 <meta name="theme-color" content="#0a0a0a" />
 <style>
   :root{
-    /* Black/white with subtle orange accents */
     --bg:#0a0a0a; --surface:#101010; --card:#141414;
     --text:#f5f5f5; --muted:#cfcfcf; --accent:#ff7a18;
     --border:rgba(255,255,255,.08); --shadow:0 16px 40px rgba(0,0,0,.35);
+    --nav-h:64px;
   }
   *{box-sizing:border-box}
   html,body{height:100%}
@@ -22,31 +22,36 @@
   }
   a{color:inherit;text-decoration:none}
 
+  /* NAV */
   .nav{
     position:sticky;top:0;z-index:50;
     backdrop-filter:saturate(130%) blur(10px);
-    background:color-mix(in srgb, var(--surface) 90%, transparent);
-    border-bottom:1px solid var(--border)
+    -webkit-backdrop-filter:saturate(130%) blur(10px);
+    background:linear-gradient(180deg, rgba(16,16,16,.95), rgba(16,16,16,.85));
+    border-bottom:1px solid var(--border);
+    box-shadow:0 10px 30px rgba(0,0,0,.35);
   }
   .nav-inner{
-    max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:14px 16px
+    max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;
+    padding:10px 18px; min-height:var(--nav-h);
   }
   .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.25px}
   .dot{width:12px;height:12px;border-radius:999px;background:var(--accent);box-shadow:0 0 0 4px rgba(255,122,24,.15), 0 0 20px rgba(255,122,24,.35)}
   .spacer{flex:1}
   .pill{display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;padding:8px 12px;background:var(--surface);font-size:13px;color:var(--muted)}
   .tabs{display:flex;gap:8px}
-  .tab-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px;opacity:.9}
+  .tab-btn{border:1px solid var(--border);background:var(--surface);color:var(--text);padding:10px 14px;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px;opacity:.95}
   .tab-btn.active{background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 35%, #000 65%), var(--surface));border-color:color-mix(in srgb, var(--accent) 40%, var(--border))}
 
-  .wrap{max-width:1240px;margin:20px auto;padding:0 16px}
+  .wrap{max-width:1240px;margin:24px auto;padding:0 16px}
   .section{display:none}.section.active{display:block}
 
+  /* Toolbar */
   .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 18px}
   .search{flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);padding:12px 14px;border-radius:14px}
   .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px}
 
-  /* Larger cards */
+  /* Grid + Cards */
   .grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px}
   .card{position:relative;border:1px solid var(--border);background:var(--card);border-radius:18px;overflow:hidden;box-shadow:var(--shadow);transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease}
   .card:hover{transform:translateY(-3px);border-color:color-mix(in srgb, var(--accent) 35%, var(--border));box-shadow:0 20px 50px rgba(0,0,0,.45)}
@@ -60,6 +65,20 @@
   .badge{font-size:12px;border:1px solid var(--border);background:#0f0f0f;padding:6px 10px;border-radius:999px;opacity:.95;color:var(--muted)}
   .badge.orange{border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); color:var(--text)}
   .empty{opacity:.75;text-align:center;padding:42px 0;color:var(--muted)}
+
+  /* Skeleton loader */
+  .skeleton-card{pointer-events:none}
+  .skeleton{position:relative;overflow:hidden;background:rgba(255,255,255,.06)}
+  .skeleton::after{
+    content:""; position:absolute; inset:0;
+    background:linear-gradient(90deg, transparent, rgba(255,255,255,.12), transparent);
+    transform:translateX(-100%); animation:shimmer 1.15s infinite linear;
+  }
+  @keyframes shimmer{100%{transform:translateX(100%)}}
+  .sk-cover{aspect-ratio:16/9}
+  .sk-line{height:16px;border-radius:6px}
+  .sk-pill{height:24px;border-radius:999px}
+  .skeleton-meta{margin-top:10px;display:flex;gap:8px;flex-wrap:wrap}
 
   /* Drops & Analytics */
   .drop{border:1px solid var(--border);background:var(--surface);border-radius:16px;padding:14px 16px;display:flex;gap:16px;align-items:center}
@@ -118,7 +137,39 @@
         </div>
         <button class="btn secondary" id="unlockBtn" title="Enter access code to unlock Admin">Unlock</button>
       </div>
-      <div id="gameGrid" class="grid"></div>
+
+      <!-- Skeleton grid (shown until Firestore returns) -->
+      <div id="skeletonGrid" class="grid" aria-hidden="true">
+        <!-- 8 skeleton cards -->
+        <div class="card skeleton-card">
+          <div class="sk-cover skeleton"></div>
+          <div class="card-body">
+            <div class="sk-line skeleton" style="width:70%"></div>
+            <div class="skeleton-meta">
+              <div class="sk-pill skeleton" style="width:90px"></div>
+              <div class="sk-pill skeleton" style="width:110px"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card skeleton-card">
+          <div class="sk-cover skeleton"></div>
+          <div class="card-body">
+            <div class="sk-line skeleton" style="width:60%"></div>
+            <div class="skeleton-meta">
+              <div class="sk-pill skeleton" style="width:100px"></div>
+              <div class="sk-pill skeleton" style="width:80px"></div>
+            </div>
+          </div>
+        </div>
+        <div class="card skeleton-card"><div class="sk-cover skeleton"></div><div class="card-body"><div class="sk-line skeleton" style="width:65%"></div><div class="skeleton-meta"><div class="sk-pill skeleton" style="width:90px"></div><div class="sk-pill skeleton" style="width:120px"></div></div></div></div>
+        <div class="card skeleton-card"><div class="sk-cover skeleton"></div><div class="card-body"><div class="sk-line skeleton" style="width:55%"></div><div class="skeleton-meta"><div class="sk-pill skeleton" style="width:80px"></div><div class="sk-pill skeleton" style="width:110px"></div></div></div></div>
+        <div class="card skeleton-card"><div class="sk-cover skeleton"></div><div class="card-body"><div class="sk-line skeleton" style="width:72%"></div><div class="skeleton-meta"><div class="sk-pill skeleton" style="width:100px"></div><div class="sk-pill skeleton" style="width:100px"></div></div></div></div>
+        <div class="card skeleton-card"><div class="sk-cover skeleton"></div><div class="card-body"><div class="sk-line skeleton" style="width:58%"></div><div class="skeleton-meta"><div class="sk-pill skeleton" style="width:120px"></div><div class="sk-pill skeleton" style="width:90px"></div></div></div></div>
+        <div class="card skeleton-card"><div class="sk-cover skeleton"></div><div class="card-body"><div class="sk-line skeleton" style="width:68%"></div><div class="skeleton-meta"><div class="sk-pill skeleton" style="width:90px"></div><div class="sk-pill skeleton" style="width:130px"></div></div></div></div>
+        <div class="card skeleton-card"><div class="sk-cover skeleton"></div><div class="card-body"><div class="sk-line skeleton" style="width:66%"></div><div class="skeleton-meta"><div class="sk-pill skeleton" style="width:105px"></div><div class="sk-pill skeleton" style="width:95px"></div></div></div></div>
+      </div>
+
+      <div id="gameGrid" class="grid" style="display:none"></div>
       <div id="emptyMsg" class="empty" style="display:none">No games found.</div>
     </section>
 
@@ -228,7 +279,7 @@
     serverTimestamp, increment
   } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
   import {
-    getDatabase, ref as dref, onValue, onDisconnect, set as dset, remove as dremove
+    getDatabase, ref as dref, onValue, onDisconnect, set as dset
   } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
   const firebaseConfig = {
@@ -253,7 +304,7 @@
   const monthKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
   const lastDayOfMonth = (d=new Date()) => new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
 
-  /* Basic nav + tabs */
+  /* Tabs */
   const sections = document.querySelectorAll('.section');
   $('#tabs').addEventListener('click', e=>{
     const btn = e.target.closest('.tab-btn'); if(!btn) return;
@@ -266,22 +317,25 @@
   /* Admin unlock */
   const ADMIN_CODE='buzzygamesadmin2025';
   function isAdmin(){ return localStorage.getItem('bz_admin')==='1'; }
-  function setAdmin(v){ if(v){ localStorage.setItem('bz_admin','1'); } else { localStorage.removeItem('bz_admin'); } $('#adminTab').style.display=v?'':'none'; if(v){ $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } }
+  function setAdmin(v){ if(v){ localStorage.setItem('bz_admin','1'); } else { localStorage.removeItem('bz_admin'); }
+    $('#adminTab').style.display=v?'':'none';
+    if(v){ $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } }
   function toggleUnlock(show){ $('#unlockModal').classList.toggle('show', !!show); if(show){ setTimeout(()=>$('#unlockInput').focus(),50); } }
   $('#unlockBtn').addEventListener('click', ()=>toggleUnlock(true));
-  $('#unlockConfirm').addEventListener('click', ()=>{ const code=$('#unlockInput').value.trim(); if(code===ADMIN_CODE){ setAdmin(true); toggleUnlock(false); $('#adminTab').click(); } else alert('Incorrect code.'); });
+  $('#unlockConfirm').addEventListener('click', ()=>{ const code=$('#unlockInput').value.trim();
+    if(code===ADMIN_CODE){ setAdmin(true); toggleUnlock(false); $('#adminTab').click(); } else alert('Incorrect code.'); });
   if(isAdmin()) setAdmin(true);
-  document.querySelector('[data-tab="admin"]').addEventListener?.('click', ()=>{ if(!isAdmin()){ $('#adminGate').style.display='block'; $('#adminWrap').style.display='none'; } else { $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } });
-  $('#adminUnlockConfirm')?.addEventListener('click', ()=>{ const code=$('#adminCodeInput').value.trim(); if(code===ADMIN_CODE){ setAdmin(true); $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } else alert('Incorrect code.'); });
+  document.querySelector('[data-tab="admin"]').addEventListener?.('click', ()=>{ if(!isAdmin()){ $('#adminGate').style.display='block'; $('#adminWrap').style.display='none'; }
+    else { $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } });
+  $('#adminUnlockConfirm')?.addEventListener('click', ()=>{ const code=$('#adminCodeInput').value.trim();
+    if(code===ADMIN_CODE){ setAdmin(true); $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; } else alert('Incorrect code.'); });
   $('#adminUnlockCancel')?.addEventListener('click', ()=>$('#adminTab').click());
 
-  /* Presence — SITE (accurate via RTDB + onDisconnect) */
+  /* SITE presence via RTDB */
   const sitePageId = (crypto.randomUUID?.() || ('page_'+Math.random().toString(36).slice(2)));
   const siteRef = dref(rtdb, `presence/site/${sitePageId}`);
-  // create presence entry and auto-remove on disconnect
   dset(siteRef, true);
   onDisconnect(siteRef).remove();
-  // live online count
   onValue(dref(rtdb, 'presence/site'), snap=>{
     const val = snap.val() || {};
     const count = Object.keys(val).length;
@@ -292,14 +346,18 @@
   /* Browse: games + live Playing via RTDB presence */
   let allGames = [];
   let playingCounts = {}; // { gameId: number }
-
+  const skeleton = $('#skeletonGrid');
   const grid = $('#gameGrid');
   const emptyMsg = $('#emptyMsg');
+  let gotFirstGames = false;
+
+  function showGrid(){ skeleton.style.display='none'; grid.style.display='grid'; }
+  function showEmpty(msg='No games found.'){ skeleton.style.display='none'; grid.style.display='none'; emptyMsg.textContent=msg; emptyMsg.style.display='block'; }
 
   function renderGames(list){
     grid.innerHTML='';
-    if(!list.length){ emptyMsg.style.display='block'; return; }
-    emptyMsg.style.display='none';
+    if(!list.length){ showEmpty(); return; }
+    emptyMsg.style.display='none'; grid.style.display='grid';
     list.forEach(g=>{
       const card = el('a', { class:'card', href:`embed.html?id=${g.id}`, title:g.name, 'data-id': g.id });
       const img = el('img', { class:'cover', src:g.coverUrl || '', alt:g.name, onerror:"this.src='';this.style.background='#111'" });
@@ -325,22 +383,29 @@
 
   // Firestore games list
   onSnapshot(query(collection(db,'games'), orderBy('name')), snap=>{
-    allGames = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    gotFirstGames = true;
+    const docs = snap.docs.map(d=>({ id:d.id, ...d.data() }));
+    allGames = docs;
+    showGrid();
     renderGames(allGames);
     // analytics totals
     $('#totalGames').textContent = allGames.length;
     const total = allGames.reduce((s,g)=> s + (Number(g.plays)||0), 0);
     $('#totalPlays').textContent = total.toLocaleString();
     if(isAdmin()) renderAdminGames(allGames);
+  }, err=>{
+    // If rules block reads or other error, fail gracefully
+    showEmpty('Unable to load games. Check Firebase rules/connection.');
   });
 
-  // RTDB: listen to all game presences and compute counts live
+  // Fallback: if Firestore hangs (bad rules/network), hide skeleton after 10s
+  setTimeout(()=>{ if(!gotFirstGames) showEmpty('Still loading… check your Firebase config/rules.'); }, 10000);
+
+  // RTDB: live playing counts
   onValue(dref(rtdb, 'presence/game'), snap=>{
     const data = snap.val() || {};
     const counts = {};
-    for(const gid in data){
-      counts[gid] = Object.keys(data[gid] || {}).length;
-    }
+    for(const gid in data){ counts[gid] = Object.keys(data[gid] || {}).length; }
     playingCounts = counts;
     updatePlayingBadges();
   });
@@ -386,19 +451,20 @@
     if(!allSorted.length) allList.innerHTML='<div class="small">No games yet.</div>';
   }
 
-  /* End-of-month popup */
+  /* EOM popup */
   async function maybeShowEOM(){
-    const today=new Date(); if(today.getDate()!==lastDayOfMonth(today)) return;
+    const today=new Date(); const last = new Date(today.getFullYear(), today.getMonth()+1, 0).getDate();
+    if(today.getDate()!==last) return;
     const mk = monthKey(today);
     const snap = await getDocs(query(collection(db,'monthlyPlays'), where('month','==',mk), orderBy('count','desc'), limit(1)));
     const box = $('#eomContent');
     if(snap.empty) box.innerHTML='No gameplay recorded this month.';
     else { const top=snap.docs[0].data(); box.innerHTML=`<div style="display:flex; gap:12px; align-items:center">${top.coverUrl?`<img src="${top.coverUrl}" style="width:110px;height:68px;object-fit:cover;border-radius:12px;border:1px solid var(--border)"/>`:''}<div><div style="font-weight:900;font-size:18px">${top.gameName||'Top Game'}</div><div class="small">Plays: <strong>${top.count||0}</strong> in ${mk}</div></div></div>`; }
-    $('#eomModal').classList.add('show');
+    document.getElementById('eomModal').classList.add('show');
   }
   maybeShowEOM();
 
-  /* Admin actions */
+  /* Admin */
   async function addGame(){
     const name=$('#gName').value.trim(), coverUrl=$('#gCover').value.trim(), gameUrl=$('#gUrl').value.trim();
     if(!name || !gameUrl){ alert('Name and Game URL are required.'); return; }
@@ -412,7 +478,12 @@
     list.forEach(g=>{
       const row = el('div',{class:'row'},[
         el('span',{},[`${g.name} `, el('span',{class:'small'},[`(#${g.id.slice(0,6)})`])]),
-        (()=>{ const wrap=el('span'); const open=el('button',{class:'btn secondary',style:'margin-right:8px'},['Open Embed']); open.addEventListener('click',()=>location.href=`embed.html?id=${g.id}`); const del=el('button',{class:'btn secondary'},['Delete']); del.addEventListener('click',async()=>{ if(confirm('Delete this game?')) await deleteDoc(doc(db,'games',g.id)); }); wrap.append(open,del); return wrap; })()
+        (()=>{ const wrap=el('span');
+          const open=el('button',{class:'btn secondary',style:'margin-right:8px'},['Open Embed']);
+          open.addEventListener('click',()=>location.href=`embed.html?id=${g.id}`);
+          const del=el('button',{class:'btn secondary'},['Delete']);
+          del.addEventListener('click',async()=>{ if(confirm('Delete this game?')) await deleteDoc(doc(db,'games',g.id)); });
+          wrap.append(open,del); return wrap; })()
       ]);
       box.appendChild(row);
     });
