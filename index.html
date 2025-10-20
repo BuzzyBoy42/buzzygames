@@ -4,107 +4,145 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Buzzy Games</title>
-<meta name="theme-color" content="#0b1220" />
+<meta name="theme-color" content="#0a0a0a" />
 <style>
   :root{
-    --bg:#0b1220; --bg-soft:#0f1630; --card:#121a35; --soft:#1a2547;
-    --text:#e8f0ff; --muted:#b8c6e3; --brand:#7c5cff; --accent:#22d3ee;
-    --border:rgba(255,255,255,.08); --shadow:0 12px 32px rgba(0,0,0,.25);
+    /* Black & white with a hint of orange */
+    --bg:#0a0a0a;         /* page background (near-black) */
+    --surface:#101010;    /* surfaces (cards/nav) */
+    --card:#141414;       /* card fill */
+    --muted:#cfcfcf;      /* muted text */
+    --text:#f5f5f5;       /* main text */
+    --accent:#ff7a18;     /* subtle orange accent */
+    --border:rgba(255,255,255,.08);
+    --shadow:0 16px 40px rgba(0,0,0,.35);
   }
   *{box-sizing:border-box}
   html,body{height:100%}
   body{
-    margin:0;background:linear-gradient(180deg,var(--bg),#0c1530 40%,#0b1220);
+    margin:0;background:radial-gradient(1200px 800px at 70% -10%, rgba(255,122,24,.08), transparent 50%), var(--bg);
     color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;
   }
   a{color:inherit;text-decoration:none}
+
+  /* Top Nav */
   .nav{
     position:sticky;top:0;z-index:50;
-    backdrop-filter:saturate(140%) blur(10px);
-    background:rgba(12, 21, 48, .6);border-bottom:1px solid var(--border);
+    backdrop-filter:saturate(130%) blur(10px);
+    background:color-mix(in srgb, var(--surface) 90%, transparent);
+    border-bottom:1px solid var(--border);
   }
   .nav-inner{
-    max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:14px;
-    padding:14px 16px;
+    max-width:1240px;margin:0 auto;display:flex;align-items:center;gap:14px;padding:14px 16px;
   }
-  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
-  .brand .dot{width:10px;height:10px;border-radius:999px;background:linear-gradient(45deg,var(--brand),var(--accent));box-shadow:0 0 12px var(--brand)}
+  .brand{display:flex;align-items:center;gap:10px;font-weight:900;letter-spacing:.25px}
+  .dot{
+    width:12px;height:12px;border-radius:999px;
+    background:var(--accent);
+    box-shadow:0 0 0 4px rgba(255,122,24,.15), 0 0 20px rgba(255,122,24,.35);
+  }
   .spacer{flex:1}
   .pill{
     display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;
-    padding:8px 12px;background:linear-gradient(180deg,#0e1a3a, #0b132c);font-size:13px;
+    padding:8px 12px;background:var(--surface);font-size:13px;color:var(--muted)
   }
   .tabs{display:flex;gap:8px}
   .tab-btn{
-    border:1px solid var(--border);background:#0c1533;color:var(--text);
-    padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:600;font-size:13px;opacity:.85;
+    border:1px solid var(--border);background:var(--surface);color:var(--text);
+    padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:700;font-size:13px;opacity:.9
   }
-  .tab-btn.active{background:linear-gradient(180deg,var(--brand),#5f48d6);opacity:1}
-  .wrap{max-width:1200px;margin:20px auto;padding:0 16px}
+  .tab-btn.active{
+    background:linear-gradient(180deg, color-mix(in srgb, var(--accent) 35%, #000 65%), var(--surface));
+    border-color:color-mix(in srgb, var(--accent) 40%, var(--border));
+  }
+
+  .wrap{max-width:1240px;margin:20px auto;padding:0 16px}
   .section{display:none}
   .section.active{display:block}
 
-  /* Browse */
-  .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 16px}
+  /* Toolbar */
+  .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 18px}
   .search{
-    flex:1;display:flex;align-items:center;gap:10px;background:#0e1a3a;border:1px solid var(--border);
-    padding:10px 12px;border-radius:12px;
+    flex:1;display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--border);
+    padding:12px 14px;border-radius:14px;
   }
-  .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:14px}
+  .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:15px}
+
+  /* Grid — bigger cards */
   .grid{
-    display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(240px,1fr));gap:18px;
   }
   .card{
-    border:1px solid var(--border);background:linear-gradient(180deg,#101a3f,#0f1733);
-    border-radius:16px;overflow:hidden;box-shadow:var(--shadow);transition:transform .15s ease, box-shadow .15s ease;
+    position:relative;border:1px solid var(--border);background:var(--card);
+    border-radius:18px;overflow:hidden;box-shadow:var(--shadow);
+    transition:transform .18s ease, box-shadow .18s ease, border-color .18s ease;
   }
-  .card:hover{transform:translateY(-2px);box-shadow:0 18px 36px rgba(0,0,0,.35)}
-  .cover{aspect-ratio:16/9;background:#0d1431;display:block;width:100%;object-fit:cover}
-  .card-body{padding:10px 12px}
-  .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-  .meta{margin-top:6px;display:flex;gap:8px;flex-wrap:wrap}
+  .card:hover{
+    transform:translateY(-3px);
+    border-color:color-mix(in srgb, var(--accent) 35%, var(--border));
+    box-shadow:0 20px 50px rgba(0,0,0,.45);
+  }
+  .cover{
+    aspect-ratio:16/9;background:#0f0f0f;display:block;width:100%;object-fit:cover
+  }
+  /* Play overlay on hover */
+  .play-overlay{
+    position:absolute;inset:0;display:grid;place-items:center;
+    background:linear-gradient(180deg, transparent, rgba(0,0,0,.45) 60%);
+    opacity:0;transition:opacity .18s ease;
+  }
+  .card:hover .play-overlay{opacity:1}
+  .play-btn{
+    background:var(--accent);color:#000;font-weight:900;border:0;border-radius:999px;padding:10px 16px;cursor:pointer
+  }
+  .card-body{padding:12px 14px}
+  .name{font-weight:800;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{margin-top:8px;display:flex;gap:8px;flex-wrap:wrap}
   .badge{
-    font-size:12px;border:1px solid var(--border);background:#0c1431;padding:4px 8px;border-radius:999px;opacity:.9
+    font-size:12px;border:1px solid var(--border);background:#0f0f0f;padding:6px 10px;border-radius:999px;opacity:.95;color:var(--muted)
   }
-  .empty{opacity:.7;text-align:center;padding:40px 0}
+  .badge.orange{border-color:color-mix(in srgb, var(--accent) 40%, var(--border)); color:var(--text)}
+  .empty{opacity:.75;text-align:center;padding:42px 0;color:var(--muted)}
 
   /* Drops */
   .drop{
-    border:1px solid var(--border);background:linear-gradient(180deg,#0e1a3a,#0b132c);border-radius:16px;
+    border:1px solid var(--border);background:var(--surface);border-radius:16px;
     padding:14px 16px;display:flex;gap:16px;align-items:center
   }
-  .drop .title{font-weight:800}
-  .countdown{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
+  .drop .title{font-weight:900}
+  .countdown{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:800;color:var(--accent)}
 
   /* Analytics */
-  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px}
   .stat{
-    border:1px solid var(--border);background:linear-gradient(180deg,#101a3f,#0f1733);border-radius:16px;padding:16px
+    border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:16px
   }
-  .stat h3{margin:0 0 8px 0;font-size:14px;opacity:.85}
+  .stat h3{margin:0 0 8px 0;font-size:14px;color:var(--muted)}
   .list{display:grid;gap:8px;margin-top:8px}
   .row{display:flex;justify-content:space-between;gap:10px}
   .mono{font-variant-numeric:tabular-nums}
 
-  /* Admin (hidden until unlocked) */
-  .admin-wrap{display:grid;gap:14px}
-  .panel{border:1px solid var(--border);background:linear-gradient(180deg,#0f1839,#0d1533);border-radius:16px;padding:16px}
+  /* Admin */
+  .admin-wrap{display:grid;gap:16px}
+  .panel{border:1px solid var(--border);background:var(--surface);border-radius:18px;padding:16px}
   .panel h3{margin-top:0}
   .field{display:grid;gap:6px;margin:8px 0}
-  .field input{background:#0f1a3a;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text)}
+  .field input{background:#0f0f0f;border:1px solid var(--border);border-radius:12px;padding:12px;color:var(--text)}
   .btn{
-    background:linear-gradient(180deg,var(--brand),#5d46d6);color:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer
+    background:var(--accent);color:#000;border:0;border-radius:12px;padding:10px 14px;font-weight:900;cursor:pointer
   }
-  .btn.secondary{background:#0f1a3a;border:1px solid var(--border);font-weight:700}
+  .btn.secondary{background:#0f0f0f;border:1px solid var(--border);color:var(--text);font-weight:700}
 
-  /* Modal for last-day popup + admin unlock */
-  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,8,24,.6)}
+  /* Modals */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(0,0,0,.6)}
   .modal.show{display:flex}
-  .modal-card{width:min(560px,92vw);border:1px solid var(--border);background:linear-gradient(180deg,#0e193b,#0b132d);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+  .modal-card{
+    width:min(560px,92vw);border:1px solid var(--border);background:var(--surface);border-radius:20px;box-shadow:var(--shadow);padding:18px
+  }
   .modal-card h2{margin-top:0}
-  .code-input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#0f1a3a;color:var(--text)}
-  .small{font-size:12px;opacity:.75}
-  @media (max-width:640px){ .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));} }
+  .code-input{width:100%;padding:12px;border-radius:12px;border:1px solid var(--border);background:#0f0f0f;color:var(--text)}
+  .small{font-size:12px;color:var(--muted)}
+  @media (max-width:640px){ .grid{grid-template-columns:repeat(auto-fill,minmax(200px,1fr));} }
 </style>
 </head>
 <body>
@@ -119,7 +157,6 @@
         <button class="tab-btn active" data-tab="browse">Browse</button>
         <button class="tab-btn" data-tab="drops">Drops</button>
         <button class="tab-btn" data-tab="analytics">Analytics</button>
-        <!-- Admin tab is injected when unlocked -->
         <button class="tab-btn" id="adminTab" style="display:none" data-tab="admin">Admin</button>
       </div>
     </div>
@@ -130,10 +167,10 @@
     <section id="browse" class="section active">
       <div class="toolbar">
         <div class="search">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" opacity=".7"/></svg>
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true"><path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" opacity=".7"/></svg>
           <input id="searchInput" placeholder="Search games…" />
         </div>
-        <button class="tab-btn" id="unlockBtn" title="Enter access code to unlock Admin">Unlock</button>
+        <button class="btn secondary" id="unlockBtn" title="Enter access code to unlock Admin">Unlock</button>
       </div>
       <div id="gameGrid" class="grid"></div>
       <div id="emptyMsg" class="empty" style="display:none">No games found.</div>
@@ -167,7 +204,7 @@
       </div>
     </section>
 
-    <!-- Admin (locked by code) -->
+    <!-- Admin -->
     <section id="admin" class="section">
       <div id="adminGate" class="panel" style="display:none">
         <h3>Admin Access</h3>
@@ -214,7 +251,7 @@
   <!-- Last day of month popup -->
   <div id="eomModal" class="modal">
     <div class="modal-card">
-      <h2>🎉 Most Played This Month</h2>
+      <h2>🏆 Most Played This Month</h2>
       <div id="eomContent">Crunching the numbers…</div>
       <div style="margin-top:14px;text-align:right">
         <button class="btn secondary" onclick="document.getElementById('eomModal').classList.remove('show')">Close</button>
@@ -236,7 +273,7 @@
   </div>
 
 <script type="module">
-  // ---------- Firebase (CDN Modular SDK) ----------
+  /* Firebase */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
   import {
@@ -245,7 +282,6 @@
     serverTimestamp, increment
   } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-  // ---- Your config (as provided)
   const firebaseConfig = {
     apiKey: "AIzaSyBI7amPbyDP4cgtWvoooGz9JQAPXJEpCaE",
     authDomain: "buzzy-games.firebaseapp.com",
@@ -257,11 +293,11 @@
   };
 
   const app = initializeApp(firebaseConfig);
-  try { getAnalytics(app); } catch(e){ /* analytics may require https + consent; ignore in dev */ }
+  try { getAnalytics(app); } catch(e){}
   const db = getFirestore(app);
 
-  // ---------- Helpers ----------
-  const $ = sel => document.querySelector(sel);
+  /* Utils */
+  const $ = s => document.querySelector(s);
   const el = (tag, attrs={}, children=[]) => {
     const n = document.createElement(tag);
     Object.entries(attrs).forEach(([k,v]) => (k==='class'? n.className=v : n.setAttribute(k,v)));
@@ -270,14 +306,14 @@
   };
   const monthKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
   const lastDayOfMonth = (d=new Date()) => new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
-  const nowIsoLocal = () => new Date(Date.now() - (new Date()).getTimezoneOffset()*60000).toISOString().slice(0,16);
+
+  /* Session ID + site presence */
   const sessionId = (() => {
     let id = localStorage.getItem('bz_session');
     if(!id){ id = crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id); }
     return id;
   })();
 
-  // ---------- Presence: site-wide concurrent users ----------
   async function startSitePresence(){
     const ref = doc(db, 'sitePresence', sessionId);
     await setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
@@ -294,7 +330,7 @@
     });
   }
 
-  // ---------- Tabs ----------
+  /* Tabs */
   const tabsEl = $('#tabs');
   const sections = document.querySelectorAll('.section');
   tabsEl.addEventListener('click', e => {
@@ -306,7 +342,7 @@
     if(tab === 'analytics'){ loadAnalytics(); }
   });
 
-  // ---------- Unlock / Admin visibility ----------
+  /* Admin unlock */
   const ADMIN_CODE = 'buzzygamesadmin2025';
   function isAdmin(){ return localStorage.getItem('bz_admin') === '1'; }
   function setAdmin(v){
@@ -324,11 +360,7 @@
     if(code === ADMIN_CODE){ setAdmin(true); toggleUnlock(false); $('#adminTab').click(); }
     else { alert('Incorrect code.'); }
   });
-
-  // Show Admin tab if already unlocked
   if(isAdmin()) setAdmin(true);
-
-  // Ensure admin section gate if tab opened without unlock
   document.querySelector('[data-tab="admin"]').addEventListener?.('click', ()=>{
     if(!isAdmin()){
       $('#adminGate').style.display='block';
@@ -338,8 +370,6 @@
       $('#adminWrap').style.display='grid';
     }
   });
-
-  // Admin gate UI inside Admin tab
   $('#adminUnlockConfirm')?.addEventListener('click', ()=>{
     const code = $('#adminCodeInput').value.trim();
     if(code === ADMIN_CODE){ setAdmin(true); $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; }
@@ -347,10 +377,9 @@
   });
   $('#adminUnlockCancel')?.addEventListener('click', ()=>{ $('#adminTab').click(); });
 
-  // ---------- Browse: load & render games ----------
-  let allGames = []; // cache for search
-  const grid = $('#gameGrid');
-  const emptyMsg = $('#emptyMsg');
+  /* Browse */
+  let allGames = [];
+  const grid = $('#gameGrid'); const emptyMsg = $('#emptyMsg');
 
   function renderGames(list){
     grid.innerHTML = '';
@@ -358,15 +387,16 @@
     emptyMsg.style.display='none';
     list.forEach(g=>{
       const card = el('a', { class:'card', href:`embed.html?id=${g.id}`, title:g.name });
-      const img = el('img', { class:'cover', src:g.coverUrl || '', alt:g.name, onerror:"this.src='';this.style.background='#0d1431'" });
+      const img = el('img', { class:'cover', src:g.coverUrl || '', alt:g.name, onerror:"this.src='';this.style.background='#111'" });
+      const overlay = el('div', { class:'play-overlay' }, [ el('button', { class:'play-btn' }, ['Play']) ]);
       const body = el('div', { class:'card-body' }, [
         el('div', { class:'name' }, [g.name || 'Untitled']),
         el('div', { class:'meta' }, [
-          el('span', { class:'badge' }, [`▶ Plays: ${g.plays ?? 0}`]),
-          el('span', { class:'badge' }, [`👥 Now: ${g.currentPlayers ?? 0}`]),
+          el('span', { class:'badge' }, [`Plays: ${g.plays ?? 0}`]),
+          el('span', { class:'badge orange' }, [`Playing: ${g.currentPlayers ?? 0}`]),
         ])
       ]);
-      card.append(img, body);
+      card.append(img, overlay, body);
       grid.appendChild(card);
     });
   }
@@ -383,16 +413,13 @@
   onSnapshot(gamesQuery, snap=>{
     allGames = snap.docs.map(d => ({ id:d.id, ...d.data() }));
     renderGames(allGames);
-    // Keep analytics “Total Games” updated
     $('#totalGames').textContent = allGames.length;
-    // Total plays (sum client-side)
     const total = allGames.reduce((s,g)=> s + (Number(g.plays)||0), 0);
     $('#totalPlays').textContent = total.toLocaleString();
-    // Fill admin list if unlocked
     if(isAdmin()) renderAdminGames(allGames);
   });
 
-  // ---------- Drops (list + countdown) ----------
+  /* Drops */
   const dropsRef = collection(db, 'drops');
   const dropsQuery = query(dropsRef, orderBy('startAt', 'asc'));
   let dropIntervals = [];
@@ -419,7 +446,7 @@
       const data = d.data(); const id = d.id;
       const row = el('div', { class:'drop' });
       if(data.coverUrl){
-        const img = el('img', { src:data.coverUrl, alt:data.title, style:'width:72px;height:48px;object-fit:cover;border-radius:10px;border:1px solid var(--border)' });
+        const img = el('img', { src:data.coverUrl, alt:data.title, style:'width:88px;height:56px;object-fit:cover;border-radius:12px;border:1px solid var(--border)' });
         row.appendChild(img);
       }
       const info = el('div', {}, [
@@ -435,7 +462,6 @@
       }
       intoList.appendChild(row);
 
-      // live countdown
       const tick = ()=>{
         const now = Date.now();
         const start = data.startAt?.toMillis ? data.startAt.toMillis() : (data.startAt || 0);
@@ -456,34 +482,36 @@
     if(isAdmin()) renderDrops(snap.docs, $('#adminDrops'), true);
   });
 
-  // ---------- Analytics tab ----------
+  /* Analytics */
   async function loadAnalytics(){
-    // Month top list
     const mk = monthKey(new Date());
     const monthQuery = query(collection(db, 'monthlyPlays'), where('month','==', mk), orderBy('count','desc'), limit(10));
     const monthSnap = await getDocs(monthQuery);
     const monthList = $('#monthTopList'); monthList.innerHTML='';
     monthSnap.forEach(d=>{
       const x = d.data();
-      const row = el('div', { class:'row' }, [ el('span', {}, [x.gameName || x.gameId]), el('strong', { class:'mono' }, [String(x.count||0)]) ]);
-      monthList.appendChild(row);
+      monthList.appendChild(el('div',{class:'row'},[
+        el('span',{},[x.gameName || x.gameId]),
+        el('strong',{class:'mono'},[String(x.count||0)])
+      ]));
     });
     if(monthSnap.empty){ monthList.innerHTML = '<div class="small">No plays yet this month.</div>'; }
 
-    // All-time from games
     const allList = $('#allTimeList'); allList.innerHTML='';
     const allSorted = [...allGames].sort((a,b)=> (b.plays||0)-(a.plays||0)).slice(0,10);
     allSorted.forEach(g=>{
-      const row = el('div', { class:'row' }, [ el('span', {}, [g.name||'Untitled']), el('strong', { class:'mono' }, [String(g.plays||0)]) ]);
-      allList.appendChild(row);
+      allList.appendChild(el('div',{class:'row'},[
+        el('span',{},[g.name||'Untitled']),
+        el('strong',{class:'mono'},[String(g.plays||0)])
+      ]));
     });
     if(!allSorted.length){ allList.innerHTML = '<div class="small">No games yet.</div>'; }
   }
 
-  // ---------- End-of-month popup ----------
+  /* End-of-month popup */
   async function maybeShowEOM(){
     const today = new Date();
-    if(today.getDate() !== lastDayOfMonth(today)) return; // only last calendar day
+    if(today.getDate() !== lastDayOfMonth(today)) return;
     const mk = monthKey(today);
     const qy = query(collection(db,'monthlyPlays'), where('month','==',mk), orderBy('count','desc'), limit(1));
     const snap = await getDocs(qy);
@@ -494,9 +522,9 @@
       const top = snap.docs[0].data();
       box.innerHTML = `
         <div style="display:flex; gap:12px; align-items:center">
-          ${top.coverUrl ? `<img src="${top.coverUrl}" alt="" style="width:96px;height:60px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"/>` : ''}
+          ${top.coverUrl ? `<img src="${top.coverUrl}" alt="" style="width:110px;height:68px;object-fit:cover;border-radius:12px;border:1px solid var(--border)"/>` : ''}
           <div>
-            <div style="font-weight:800;font-size:18px">${top.gameName || 'Top Game'}</div>
+            <div style="font-weight:900;font-size:18px">${top.gameName || 'Top Game'}</div>
             <div class="small">Plays: <strong>${top.count||0}</strong> in ${mk}</div>
           </div>
         </div>`;
@@ -504,7 +532,7 @@
     $('#eomModal').classList.add('show');
   }
 
-  // ---------- Admin actions ----------
+  /* Admin actions */
   async function addGame(){
     const name = $('#gName').value.trim();
     const coverUrl = $('#gCover').value.trim();
@@ -520,12 +548,12 @@
     list.forEach(g=>{
       const row = el('div', { class:'row' }, [
         el('span', {}, [`${g.name} `, el('span',{class:'small'},[`(#${g.id.slice(0,6)})`])]),
-        el('div', {}, [
-          el('button', { class:'btn secondary', style:'margin-right:6px' }, ['Open Embed']).addEventListener('click',()=>{ location.href=`embed.html?id=${g.id}`; }),
-          (()=>{ const btn = el('button',{class:'btn secondary'},['Delete']);
-            btn.addEventListener('click', async ()=>{ if(confirm('Delete this game?')) await deleteDoc(doc(db,'games',g.id)); });
-            return btn; })()
-        ])
+        (()=>{ const wrap = el('span'); 
+          const open = el('button',{class:'btn secondary',style:'margin-right:8px'},['Open Embed']);
+          open.addEventListener('click',()=>{ location.href=`embed.html?id=${g.id}`; });
+          const del = el('button',{class:'btn secondary'},['Delete']);
+          del.addEventListener('click', async ()=>{ if(confirm('Delete this game?')) await deleteDoc(doc(db,'games',g.id)); });
+          wrap.append(open,del); return wrap; })()
       ]);
       box.appendChild(row);
     });
@@ -549,7 +577,7 @@
   }
   $('#createDropBtn').addEventListener('click', createDrop);
 
-  // ---------- Init ----------
+  /* Init */
   startSitePresence();
   maybeShowEOM();
 </script>
