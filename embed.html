@@ -1,62 +1,139 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8"/>
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover"/>
-  <title>Play · Buzzy Games</title>
-  <meta name="theme-color" content="#0b0f14"/>
-  <style>
-    :root{ --bg:#0b0f14; --txt:#e6ebf5; --muted:#aab6ca; --glass:rgba(255,255,255,.06); }
-    *{ box-sizing:border-box }
-    html,body{ height:100%; }
-    body{ margin:0; background:#0b0f14; color:var(--txt); font-family:ui-sans-serif,system-ui,-apple-system,Segoe UI,Roboto,Helvetica,Arial; }
-    .bar{
-      position:sticky; top:0; z-index:5; display:flex; align-items:center; gap:10px;
-      padding:10px 12px; background:linear-gradient(180deg, rgba(11,15,20,.9), rgba(11,15,20,.6));
-      border-bottom:1px solid rgba(255,255,255,.06); backdrop-filter: blur(8px);
-    }
-    .btn{ background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12); border-radius:10px; padding:8px 12px; cursor:pointer; }
-    .title{ font-weight:800; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
-    .muted{ color:var(--muted); font-size:12px }
-    .wrap{ position:fixed; inset:48px 0 0 0; display:flex; }
-    #frame{ flex:1; border:none; background:#000; }
-  </style>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Play • Buzzy Games</title>
+<meta name="theme-color" content="#0b1220" />
+<style>
+  :root{
+    --bg:#0b1220; --bar:#0e1839; --border:rgba(255,255,255,.1); --text:#e8f0ff; --muted:#b8c6e3; --brand:#7c5cff;
+  }
+  html,body{height:100%}
+  body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif}
+  .bar{
+    position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;padding:10px 12px;
+    background:linear-gradient(180deg,var(--bar),#0b132d);border-bottom:1px solid var(--border)
+  }
+  .btn{background:#0f1a3a;color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn.primary{background:linear-gradient(180deg,var(--brand),#5d46d6);border:0;font-weight:800}
+  .spacer{flex:1}
+  .title{font-weight:800;letter-spacing:.2px}
+  .pill{border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px;opacity:.9}
+  iframe{display:block;width:100%;height:calc(100vh - 52px);border:0;background:#0c1431}
+</style>
 </head>
 <body>
   <div class="bar">
-    <button class="btn" id="backBtn">← Home</button>
-    <div class="title" id="title">Loading…</div>
-    <div style="margin-left:auto; display:flex; gap:8px">
-      <button class="btn" id="fsBtn" title="Fullscreen">Fullscreen</button>
-    </div>
+    <button class="btn" id="backBtn">← Back</button>
+    <div class="title" id="gameTitle">Loading…</div>
+    <div class="spacer"></div>
+    <div class="pill" title="Players in this game right now">👥 <span id="nowCount">0</span></div>
+    <button class="btn" id="openBtn" title="Open game URL in a new tab">Open</button>
+    <button class="btn primary" id="shareBtn" title="Copy share link">Share</button>
   </div>
-  <div class="wrap">
-    <iframe id="frame" allow="autoplay; fullscreen; gamepad; xr-spatial-tracking; accelerometer; magnetometer; gyroscope; clipboard-read; clipboard-write" sandbox="allow-scripts allow-same-origin allow-forms allow-pointer-lock allow-modals allow-popups" referrerpolicy="no-referrer"></iframe>
-  </div>
+  <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
 
-  <script>
-    const params = new URLSearchParams(location.search);
-    const url = params.get('url') || '';
-    const title = params.get('title') || 'Game';
-    document.getElementById('title').textContent = title;
-    const frame = document.getElementById('frame');
+<script type="module">
+  // ---------- Firebase ----------
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
+  import {
+    getFirestore, doc, getDoc, onSnapshot, updateDoc, setDoc, serverTimestamp, increment
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-    // Defensive: block javascript: and data:text/html
-    if (!/^https?:\/\//i.test(url)) {
-      frame.srcdoc = `<div style="display:grid;place-items:center;height:100%;color:#e6ebf5"><div>Invalid or missing URL.</div><div class="muted">Got: ${String(url || '—')}</div></div>`;
-    } else {
-      frame.src = url;
-    }
+  const firebaseConfig = {
+    apiKey: "AIzaSyBI7amPbyDP4cgtWvoooGz9JQAPXJEpCaE",
+    authDomain: "buzzy-games.firebaseapp.com",
+    projectId: "buzzy-games",
+    storageBucket: "buzzy-games.firebasestorage.app",
+    messagingSenderId: "1019717198169",
+    appId: "1:1019717198169:web:8bff09527755e2672c6c48",
+    measurementId: "G-JPPBF2PHDJ"
+  };
 
-    document.getElementById('backBtn').onclick = () => history.length > 1 ? history.back() : (location.href = './index.html');
+  const app = initializeApp(firebaseConfig);
+  try { getAnalytics(app); } catch(e){}
 
-    document.getElementById('fsBtn').onclick = async () => {
-      const el = document.documentElement;
-      try{
-        if (!document.fullscreenElement) await el.requestFullscreen();
-        else await document.exitFullscreen();
-      }catch(e){ console.warn(e); }
-    };
-  </script>
+  const db = getFirestore(app);
+
+  // ---------- Helpers ----------
+  const $ = sel => document.querySelector(sel);
+  const params = new URLSearchParams(location.search);
+  const gameId = params.get('id');
+  if(!gameId){ alert('Missing game id'); }
+
+  const sessionId = (() => {
+    let id = localStorage.getItem('bz_session');
+    if(!id){ id = crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id); }
+    return id;
+  })();
+
+  // site-wide presence update (so analytics “online” counts include embed sessions)
+  async function bumpSitePresence(){
+    const ref = doc(db, 'sitePresence', sessionId);
+    await setDoc(ref, { lastSeen: serverTimestamp() }, { merge: true });
+  }
+  bumpSitePresence();
+  setInterval(bumpSitePresence, 25000);
+
+  // ---------- Load game ----------
+  const gRef = doc(db, 'games', gameId);
+  const gSnap = await getDoc(gRef);
+  if(!gSnap.exists()){
+    $('#gameTitle').textContent = 'Game not found';
+  } else {
+    const g = gSnap.data();
+    $('#gameTitle').textContent = g.name || 'Untitled';
+    $('#frame').src = g.gameUrl;
+    $('#openBtn').addEventListener('click', ()=> window.open(g.gameUrl, '_blank'));
+    $('#shareBtn').addEventListener('click', async ()=>{
+      const url = `${location.origin}${location.pathname}?id=${gameId}`;
+      try{ await navigator.clipboard.writeText(url); alert('Share link copied!'); } catch{ prompt('Copy link:', url); }
+    });
+  }
+
+  // ---------- Metrics: plays + current players + monthly plays ----------
+  // Increment plays once per load
+  try { await updateDoc(gRef, { plays: increment(1) }); } catch(e){ /* if missing doc or perms, ignore */ }
+
+  // Increment currentPlayers on join, decrement on leave
+  async function incPlayers(delta){
+    try { await updateDoc(gRef, { currentPlayers: increment(delta) }); } catch(e){}
+  }
+  await incPlayers(+1);
+  window.addEventListener('beforeunload', ()=>{ navigator.sendBeacon?.('/', ''); /* nudge */ });
+  window.addEventListener('pagehide', ()=>{ incPlayers(-1); });
+  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden'){ incPlayers(-1); } else { incPlayers(+1); } });
+
+  // Keep a presence heartbeat per game (optional, for future correction if needed)
+  const presRef = doc(db, `gamePresence/${gameId}/sessions`, sessionId);
+  await setDoc(presRef, { lastSeen: serverTimestamp() }, { merge:true });
+  setInterval(()=> setDoc(presRef, { lastSeen: serverTimestamp() }, { merge:true }), 25000);
+
+  // Keep the live "now" badge updated from game doc
+  onSnapshot(gRef, snap=>{
+    const d = snap.data();
+    $('#nowCount').textContent = Math.max(0, Number(d?.currentPlayers||0));
+  });
+
+  // Record monthly plays document for EOM leaderboard
+  function monthKey(d=new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
+  try {
+    const mk = monthKey(new Date());
+    const mRef = doc(db, 'monthlyPlays', `${mk}_${gameId}`);
+    const base = gSnap.data() || {};
+    await setDoc(mRef, {
+      month: mk, gameId, gameName: base.name || null, coverUrl: base.coverUrl || null,
+      count: increment(1), updatedAt: serverTimestamp()
+    }, { merge:true });
+  } catch(e){}
+
+  // ---------- UI ----------
+  $('#backBtn').addEventListener('click', ()=> {
+    if(document.referrer && document.referrer.includes(location.host)) history.back();
+    else location.href = 'index.html';
+  });
+</script>
 </body>
 </html>
