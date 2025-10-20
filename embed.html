@@ -6,16 +6,10 @@
 <title>Play • Buzzy Games</title>
 <meta name="theme-color" content="#0a0a0a" />
 <style>
-  :root{
-    --bg:#0a0a0a; --bar:#101010; --border:rgba(255,255,255,.1);
-    --text:#f5f5f5; --muted:#cfcfcf; --accent:#ff7a18;
-  }
+  :root{ --bg:#0a0a0a; --bar:#101010; --border:rgba(255,255,255,.1); --text:#f5f5f5; --muted:#cfcfcf; --accent:#ff7a18; }
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif}
-  .bar{
-    position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;padding:10px 12px;
-    background:linear-gradient(180deg,var(--bar),#0c0c0c);border-bottom:1px solid var(--border)
-  }
+  .bar{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;padding:10px 12px;background:linear-gradient(180deg,var(--bar),#0c0c0c);border-bottom:1px solid var(--border)}
   .btn{background:#111;color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer}
   .btn.primary{background:var(--accent);border:0;color:#000;font-weight:900}
   .spacer{flex:1}
@@ -29,19 +23,16 @@
     <button class="btn" id="backBtn">← Back</button>
     <div class="title" id="gameTitle">Loading…</div>
     <div class="spacer"></div>
-    <div class="pill" title="Players playing this game">👥 <span id="nowCount">0</span> Playing</div>
+    <div class="pill" title="Players currently in this game">👥 <span id="nowCount">0</span> Playing</div>
     <button class="btn" id="openBtn" title="Open game URL in a new tab">Open</button>
     <button class="btn primary" id="shareBtn" title="Copy share link">Share</button>
   </div>
   <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
 
 <script type="module">
-  /* Firebase */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
-  import {
-    getFirestore, doc, getDoc, onSnapshot, updateDoc, setDoc, serverTimestamp, increment
-  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+  import { getFirestore, doc, getDoc, onSnapshot, setDoc, serverTimestamp, collection, query, where } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBI7amPbyDP4cgtWvoooGz9JQAPXJEpCaE",
@@ -52,35 +43,34 @@
     appId: "1:1019717198169:web:8bff09527755e2672c6c48",
     measurementId: "G-JPPBF2PHDJ"
   };
-  const app = initializeApp(firebaseConfig);
-  try { getAnalytics(app); } catch(e){}
+  const app = initializeApp(firebaseConfig); try{ getAnalytics(app); }catch(e){}
   const db = getFirestore(app);
 
-  /* Helpers */
   const $ = s => document.querySelector(s);
   const params = new URLSearchParams(location.search);
   const gameId = params.get('id');
   if(!gameId){ alert('Missing game id'); }
 
-  const sessionId = (() => {
-    let id = localStorage.getItem('bz_session');
-    if(!id){ id = crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id); }
-    return id;
-  })();
+  const cutoffMs = () => Date.now() - 60_000;
 
-  async function bumpSitePresence(){
-    const ref = doc(db, 'sitePresence', sessionId);
-    await setDoc(ref, { lastSeen: serverTimestamp() }, { merge: true });
-  }
-  bumpSitePresence();
-  setInterval(bumpSitePresence, 25000);
+  // stable per-browser session id
+  const sessionId = (()=>{ let id=localStorage.getItem('bz_session'); if(!id){ id=crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id);} return id; })();
 
-  /* Load game */
+  // site-wide presence heartbeat (so Analytics “online” stays accurate)
+  const siteRef = doc(db, 'sitePresence', sessionId);
+  setDoc(siteRef, { lastSeen: serverTimestamp() }, { merge:true });
+  setInterval(()=> setDoc(siteRef, { lastSeen: serverTimestamp() }, { merge:true }), 25_000);
+
+  // per-game presence heartbeat in top-level gameSessions (accurate)
+  const sessKey = `${gameId}_${sessionId}`;
+  const sessRef = doc(db, 'gameSessions', sessKey);
+  setDoc(sessRef, { gameId, sessionId, lastSeen: serverTimestamp() }, { merge:true });
+  setInterval(()=> setDoc(sessRef, { lastSeen: serverTimestamp() }, { merge:true }), 25_000);
+
+  // Load game and wire UI
   const gRef = doc(db, 'games', gameId);
   const gSnap = await getDoc(gRef);
-  if(!gSnap.exists()){
-    $('#gameTitle').textContent = 'Game not found';
-  } else {
+  if(gSnap.exists()){
     const g = gSnap.data();
     $('#gameTitle').textContent = g.name || 'Untitled';
     $('#frame').src = g.gameUrl;
@@ -89,45 +79,32 @@
       const url = `${location.origin}${location.pathname}?id=${gameId}`;
       try{ await navigator.clipboard.writeText(url); alert('Share link copied!'); } catch{ prompt('Copy link:', url); }
     });
+    // Count a play once per load (kept simple)
+    try{ const { updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js'); await updateDoc(gRef, { plays: increment(1) }); }catch(e){}
+  } else {
+    $('#gameTitle').textContent = 'Game not found';
   }
 
-  /* Metrics */
-  try { await updateDoc(gRef, { plays: increment(1) }); } catch(e){}
-  async function incPlayers(delta){ try { await updateDoc(gRef, { currentPlayers: increment(delta) }); } catch(e){} }
-  await incPlayers(+1);
-
-  // Best-effort decrement on leave/hidden
-  window.addEventListener('beforeunload', ()=>{ navigator.sendBeacon?.('/', ''); });
-  window.addEventListener('pagehide', ()=>{ incPlayers(-1); });
-  document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden'){ incPlayers(-1); } else { incPlayers(+1); } });
-
-  // Heartbeat per-game (future reconciliation)
-  const presRef = doc(db, `gamePresence/${gameId}/sessions`, sessionId);
-  await setDoc(presRef, { lastSeen: serverTimestamp() }, { merge:true });
-  setInterval(()=> setDoc(presRef, { lastSeen: serverTimestamp() }, { merge:true }), 25000);
-
-  onSnapshot(gRef, snap=>{
-    const d = snap.data();
-    $('#nowCount').textContent = Math.max(0, Number(d?.currentPlayers||0));
+  // Live "Playing" count — listen to sessions for this game and filter by dynamic cutoff
+  let latestDocs = [];
+  onSnapshot(query(collection(db,'gameSessions'), where('gameId','==',gameId)), snap=>{
+    latestDocs = snap.docs.map(d=>d.data());
+    recomputeNow();
   });
+  function recomputeNow(){
+    const cutoff = cutoffMs();
+    const n = latestDocs.reduce((acc,x)=>{
+      const t = x.lastSeen;
+      const ms = t?.toMillis ? t.toMillis() : (t?.seconds ? t.seconds*1000 : 0);
+      return acc + (ms >= cutoff ? 1 : 0);
+    }, 0);
+    $('#nowCount').textContent = n;
+  }
+  setInterval(recomputeNow, 1000); // ensures stale sessions fall out visually
 
-  // Monthly plays record
-  function monthKey(d=new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
-  try {
-    const mk = monthKey(new Date());
-    const mRef = doc(db, 'monthlyPlays', `${mk}_${gameId}`);
-    const base = gSnap.data() || {};
-    await setDoc(mRef, {
-      month: mk, gameId, gameName: base.name || null, coverUrl: base.coverUrl || null,
-      count: increment(1), updatedAt: serverTimestamp()
-    }, { merge:true });
-  } catch(e){}
-
-  /* UI */
-  $('#backBtn').addEventListener('click', ()=> {
-    if(document.referrer && document.referrer.includes(location.host)) history.back();
-    else location.href = 'index.html';
-  });
+  // best-effort cleanup (optional; accuracy comes from cutoff anyway)
+  window.addEventListener('pagehide', ()=>{ try{ navigator.sendBeacon('/', ''); }catch{} });
+  $('#backBtn').addEventListener('click', ()=>{ if(document.referrer && document.referrer.includes(location.host)) history.back(); else location.href='index.html'; });
 </script>
 </body>
 </html>
