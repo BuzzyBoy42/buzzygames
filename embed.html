@@ -24,7 +24,7 @@
     <div class="title" id="gameTitle">Loading…</div>
     <div class="spacer"></div>
     <div class="pill" title="Players currently in this game">👥 <span id="nowCount">0</span> Playing</div>
-    <button class="btn" id="openBtn" title="Open game URL in a new tab">Open</button>
+    <!-- Removed the "Open" button per your request -->
     <button class="btn primary" id="shareBtn" title="Copy share link">Share</button>
   </div>
   <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
@@ -32,7 +32,12 @@
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
-  import { getFirestore, doc, getDoc, onSnapshot, setDoc, serverTimestamp, collection, query, where } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+  import {
+    getFirestore, doc, getDoc, updateDoc, serverTimestamp, increment
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
+  import {
+    getDatabase, ref as dref, onValue, onDisconnect, set as dset, remove as dremove
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-database.js";
 
   const firebaseConfig = {
     apiKey: "AIzaSyBI7amPbyDP4cgtWvoooGz9JQAPXJEpCaE",
@@ -41,70 +46,60 @@
     storageBucket: "buzzy-games.firebasestorage.app",
     messagingSenderId: "1019717198169",
     appId: "1:1019717198169:web:8bff09527755e2672c6c48",
-    measurementId: "G-JPPBF2PHDJ"
+    measurementId: "G-JPPBF2PHDJ",
+    databaseURL: "https://buzzy-games-default-rtdb.firebaseio.com"
   };
-  const app = initializeApp(firebaseConfig); try{ getAnalytics(app); }catch(e){}
+
+  const app = initializeApp(firebaseConfig);
+  try { getAnalytics(app); } catch(e){}
   const db = getFirestore(app);
+  const rtdb = getDatabase(app);
 
   const $ = s => document.querySelector(s);
   const params = new URLSearchParams(location.search);
   const gameId = params.get('id');
   if(!gameId){ alert('Missing game id'); }
 
-  const cutoffMs = () => Date.now() - 60_000;
-
-  // stable per-browser session id
-  const sessionId = (()=>{ let id=localStorage.getItem('bz_session'); if(!id){ id=crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id);} return id; })();
-
-  // site-wide presence heartbeat (so Analytics “online” stays accurate)
-  const siteRef = doc(db, 'sitePresence', sessionId);
-  setDoc(siteRef, { lastSeen: serverTimestamp() }, { merge:true });
-  setInterval(()=> setDoc(siteRef, { lastSeen: serverTimestamp() }, { merge:true }), 25_000);
-
-  // per-game presence heartbeat in top-level gameSessions (accurate)
-  const sessKey = `${gameId}_${sessionId}`;
-  const sessRef = doc(db, 'gameSessions', sessKey);
-  setDoc(sessRef, { gameId, sessionId, lastSeen: serverTimestamp() }, { merge:true });
-  setInterval(()=> setDoc(sessRef, { lastSeen: serverTimestamp() }, { merge:true }), 25_000);
-
-  // Load game and wire UI
-  const gRef = doc(db, 'games', gameId);
+  // Load game meta, set iframe, bump plays once
+  const gRef = doc(db,'games', gameId);
   const gSnap = await getDoc(gRef);
   if(gSnap.exists()){
     const g = gSnap.data();
     $('#gameTitle').textContent = g.name || 'Untitled';
     $('#frame').src = g.gameUrl;
-    $('#openBtn').addEventListener('click', ()=> window.open(g.gameUrl, '_blank'));
     $('#shareBtn').addEventListener('click', async ()=>{
       const url = `${location.origin}${location.pathname}?id=${gameId}`;
       try{ await navigator.clipboard.writeText(url); alert('Share link copied!'); } catch{ prompt('Copy link:', url); }
     });
-    // Count a play once per load (kept simple)
-    try{ const { updateDoc, increment } = await import('https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js'); await updateDoc(gRef, { plays: increment(1) }); }catch(e){}
+    try { await updateDoc(gRef, { plays: increment(1), lastPlayedAt: serverTimestamp() }); } catch(e){}
   } else {
     $('#gameTitle').textContent = 'Game not found';
   }
 
-  // Live "Playing" count — listen to sessions for this game and filter by dynamic cutoff
-  let latestDocs = [];
-  onSnapshot(query(collection(db,'gameSessions'), where('gameId','==',gameId)), snap=>{
-    latestDocs = snap.docs.map(d=>d.data());
-    recomputeNow();
-  });
-  function recomputeNow(){
-    const cutoff = cutoffMs();
-    const n = latestDocs.reduce((acc,x)=>{
-      const t = x.lastSeen;
-      const ms = t?.toMillis ? t.toMillis() : (t?.seconds ? t.seconds*1000 : 0);
-      return acc + (ms >= cutoff ? 1 : 0);
-    }, 0);
-    $('#nowCount').textContent = n;
-  }
-  setInterval(recomputeNow, 1000); // ensures stale sessions fall out visually
+  // SITE presence entry (for global online)
+  const sitePageId = (crypto.randomUUID?.() || ('page_'+Math.random().toString(36).slice(2)));
+  const siteRef = dref(rtdb, `presence/site/${sitePageId}`);
+  dset(siteRef, true);
+  onDisconnect(siteRef).remove();
 
-  // best-effort cleanup (optional; accuracy comes from cutoff anyway)
-  window.addEventListener('pagehide', ()=>{ try{ navigator.sendBeacon('/', ''); }catch{} });
-  $('#backBtn').addEventListener('click', ()=>{ if(document.referrer && document.referrer.includes(location.host)) history.back(); else location.href='index.html'; });
+  // GAME presence entry (accurate concurrent players)
+  const gamePageId = (crypto.randomUUID?.() || ('page_'+Math.random().toString(36).slice(2)));
+  const gameRef = dref(rtdb, `presence/game/${gameId}/${gamePageId}`);
+  dset(gameRef, true);
+  onDisconnect(gameRef).remove();
+
+  // Live "Playing" count by counting children under presence/game/{gameId}
+  onValue(dref(rtdb, `presence/game/${gameId}`), snap=>{
+    const val = snap.val() || {};
+    const count = Object.keys(val).length;
+    $('#nowCount').textContent = count;
+  });
+
+  // UI
+  $('#backBtn').addEventListener('click', ()=> {
+    if(document.referrer && document.referrer.includes(location.host)) history.back();
+    else location.href = 'index.html';
+  });
 </script>
 </body>
 </html>
