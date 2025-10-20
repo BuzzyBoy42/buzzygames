@@ -1,603 +1,557 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta name="theme-color" content="#0b0f14" />
-  <meta name="apple-mobile-web-app-capable" content="yes" />
-  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
-  <meta name="application-name" content="Buzzy Games Launcher" />
-  <title>Buzzy Games Launcher</title>
-  <meta name="description" content="A sleek, Steam-style PWA game launcher with a modern catalog UI." />
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+<title>Buzzy Games</title>
+<meta name="theme-color" content="#0b1220" />
+<style>
+  :root{
+    --bg:#0b1220; --bg-soft:#0f1630; --card:#121a35; --soft:#1a2547;
+    --text:#e8f0ff; --muted:#b8c6e3; --brand:#7c5cff; --accent:#22d3ee;
+    --border:rgba(255,255,255,.08); --shadow:0 12px 32px rgba(0,0,0,.25);
+  }
+  *{box-sizing:border-box}
+  html,body{height:100%}
+  body{
+    margin:0;background:linear-gradient(180deg,var(--bg),#0c1530 40%,#0b1220);
+    color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif;
+  }
+  a{color:inherit;text-decoration:none}
+  .nav{
+    position:sticky;top:0;z-index:50;
+    backdrop-filter:saturate(140%) blur(10px);
+    background:rgba(12, 21, 48, .6);border-bottom:1px solid var(--border);
+  }
+  .nav-inner{
+    max-width:1200px;margin:0 auto;display:flex;align-items:center;gap:14px;
+    padding:14px 16px;
+  }
+  .brand{display:flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.3px}
+  .brand .dot{width:10px;height:10px;border-radius:999px;background:linear-gradient(45deg,var(--brand),var(--accent));box-shadow:0 0 12px var(--brand)}
+  .spacer{flex:1}
+  .pill{
+    display:inline-flex;align-items:center;gap:8px;border:1px solid var(--border);border-radius:999px;
+    padding:8px 12px;background:linear-gradient(180deg,#0e1a3a, #0b132c);font-size:13px;
+  }
+  .tabs{display:flex;gap:8px}
+  .tab-btn{
+    border:1px solid var(--border);background:#0c1533;color:var(--text);
+    padding:8px 12px;border-radius:999px;cursor:pointer;font-weight:600;font-size:13px;opacity:.85;
+  }
+  .tab-btn.active{background:linear-gradient(180deg,var(--brand),#5f48d6);opacity:1}
+  .wrap{max-width:1200px;margin:20px auto;padding:0 16px}
+  .section{display:none}
+  .section.active{display:block}
 
-  <style>
-    :root{
-      --bg:#0b0f14; --bg-elev:#111826; --bg-elev-2:#152033;
-      --txt:#e6ebf5; --muted:#aab6ca;
-      --accent:#fbbf24; --accent-2:#8b5cf6;
-      --chip:#1a2841; --card:#111a2b; --glass:rgba(255,255,255,0.04);
-      --radius:18px; --shadow:0 8px 24px rgba(0,0,0,.3);
-    }
-    *{box-sizing:border-box}
-    html,body{height:100%}
-    body{
-      margin:0; font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, Apple Color Emoji, Segoe UI Emoji;
-      color:var(--txt);
-      background: radial-gradient(1200px 600px at 20% -10%, #152033, transparent 60%),
-                  radial-gradient(1200px 800px at 110% 10%, #1c2a44, transparent 50%),
-                  var(--bg);
-      background-attachment: fixed;
-    }
-    a{color:inherit; text-decoration:none}
-    button[disabled]{opacity:.5; cursor:not-allowed}
+  /* Browse */
+  .toolbar{display:flex;gap:10px;align-items:center;margin:10px 0 16px}
+  .search{
+    flex:1;display:flex;align-items:center;gap:10px;background:#0e1a3a;border:1px solid var(--border);
+    padding:10px 12px;border-radius:12px;
+  }
+  .search input{flex:1;background:transparent;border:0;outline:0;color:var(--text);font-size:14px}
+  .grid{
+    display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:14px;
+  }
+  .card{
+    border:1px solid var(--border);background:linear-gradient(180deg,#101a3f,#0f1733);
+    border-radius:16px;overflow:hidden;box-shadow:var(--shadow);transition:transform .15s ease, box-shadow .15s ease;
+  }
+  .card:hover{transform:translateY(-2px);box-shadow:0 18px 36px rgba(0,0,0,.35)}
+  .cover{aspect-ratio:16/9;background:#0d1431;display:block;width:100%;object-fit:cover}
+  .card-body{padding:10px 12px}
+  .name{font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .meta{margin-top:6px;display:flex;gap:8px;flex-wrap:wrap}
+  .badge{
+    font-size:12px;border:1px solid var(--border);background:#0c1431;padding:4px 8px;border-radius:999px;opacity:.9
+  }
+  .empty{opacity:.7;text-align:center;padding:40px 0}
 
-    /* Top bar */
-    .topbar{
-      position:sticky; top:0; z-index:50;
-      display:flex; align-items:center; gap:14px; padding:14px 18px;
-      background: linear-gradient(180deg, rgba(11,15,20,.9), rgba(11,15,20,.6));
-      backdrop-filter: blur(8px);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-    }
-    .brand{display:flex; align-items:center; gap:10px; font-weight:800; letter-spacing:.3px;}
-    .logo{
-      width:36px; height:36px; display:grid; place-items:center; border-radius:10px;
-      background: linear-gradient(140deg, var(--accent), var(--accent-2));
-      box-shadow: 0 6px 16px rgba(251,191,36,.35); font-weight:900;
-    }
-    .grow{flex:1}
-    .search{
-      display:flex; align-items:center; gap:8px; background:var(--bg-elev); border:1px solid rgba(255,255,255,.08);
-      padding:8px 12px; border-radius:12px; width:min(480px, 55vw);
-    }
-    .search input{ flex:1; border:none; background:transparent; color:var(--txt); outline:none; font-size:14px; }
-    .btn{
-      background:linear-gradient(140deg, var(--accent), var(--accent-2));
-      border:none; color:#08121f; font-weight:700; padding:10px 14px; border-radius:12px; cursor:pointer;
-      box-shadow:0 6px 16px rgba(251,191,36,.35);
-    }
-    .btn.secondary{ background:transparent; color:var(--txt); border:1px solid rgba(255,255,255,.12); box-shadow:none; }
-    .btn.small{ padding:8px 12px; border-radius:10px; font-size:13px; }
-    .ghost-btn{
-      background:transparent; border:1px solid rgba(255,255,255,.12); color:var(--txt);
-      padding:8px 10px; border-radius:10px; cursor:pointer;
-    }
+  /* Drops */
+  .drop{
+    border:1px solid var(--border);background:linear-gradient(180deg,#0e1a3a,#0b132c);border-radius:16px;
+    padding:14px 16px;display:flex;gap:16px;align-items:center
+  }
+  .drop .title{font-weight:800}
+  .countdown{margin-left:auto;font-variant-numeric:tabular-nums;font-weight:700}
 
-    /* Install banner (recommended) */
-    .install-banner{
-      display:flex; align-items:center; gap:12px;
-      background: linear-gradient(180deg, rgba(255,255,255,.06), rgba(255,255,255,.03));
-      border-bottom:1px solid rgba(255,255,255,.08);
-      padding:10px 16px;
-    }
-    .install-banner .note{ color:var(--muted); font-size:14px }
-    .install-banner .actions{ margin-left:auto; display:flex; gap:8px }
+  /* Analytics */
+  .cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}
+  .stat{
+    border:1px solid var(--border);background:linear-gradient(180deg,#101a3f,#0f1733);border-radius:16px;padding:16px
+  }
+  .stat h3{margin:0 0 8px 0;font-size:14px;opacity:.85}
+  .list{display:grid;gap:8px;margin-top:8px}
+  .row{display:flex;justify-content:space-between;gap:10px}
+  .mono{font-variant-numeric:tabular-nums}
 
-    main{padding:22px; max-width:1200px; margin:0 auto;}
-    section{margin-bottom:28px}
-    .section-head{ display:flex; align-items:center; justify-content:space-between; margin-bottom:12px; }
-    .section-head h2{margin:0; font-size:20px; letter-spacing:.2px}
-    .row{
-      display:grid; grid-auto-flow:column; grid-auto-columns: 220px;
-      gap:14px; overflow-x:auto; padding-bottom:8px; scroll-snap-type:x mandatory;
-    }
-    .row::-webkit-scrollbar{height:10px}
-    .row::-webkit-scrollbar-thumb{background:#27354f; border-radius:99px}
+  /* Admin (hidden until unlocked) */
+  .admin-wrap{display:grid;gap:14px}
+  .panel{border:1px solid var(--border);background:linear-gradient(180deg,#0f1839,#0d1533);border-radius:16px;padding:16px}
+  .panel h3{margin-top:0}
+  .field{display:grid;gap:6px;margin:8px 0}
+  .field input{background:#0f1a3a;border:1px solid var(--border);border-radius:10px;padding:10px;color:var(--text)}
+  .btn{
+    background:linear-gradient(180deg,var(--brand),#5d46d6);color:#fff;border:0;border-radius:12px;padding:10px 14px;font-weight:800;cursor:pointer
+  }
+  .btn.secondary{background:#0f1a3a;border:1px solid var(--border);font-weight:700}
 
-    .card{
-      scroll-snap-align:start;
-      background:linear-gradient(180deg, rgba(255,255,255,.05), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.08);
-      border-radius:var(--radius); overflow:hidden; position:relative; box-shadow: var(--shadow);
-      display:flex; flex-direction:column; min-height:300px;
-    }
-    .cover{ aspect-ratio:16/9; width:100%; background:#0e1626; position:relative; overflow:hidden; }
-    .cover img{width:100%; height:100%; object-fit:cover; display:block}
-    .badge{
-      position:absolute; top:10px; left:10px;
-      background:linear-gradient(140deg, #34d399, #10b981); color:#051019; font-weight:800;
-      padding:6px 10px; border-radius:999px; font-size:11px; border:1px solid rgba(0,0,0,.1)
-    }
-    .content{padding:12px; display:flex; flex-direction:column; gap:8px}
-    .title{font-weight:800; line-height:1.3}
-    .genres{color:var(--muted); font-size:12px}
-    .desc{ color:var(--muted); font-size:12px; line-height:1.4; display:-webkit-box; -webkit-line-clamp:3; -webkit-box-orient:vertical; overflow:hidden; }
-
-    /* Dialogs */
-    dialog{
-      width:min(720px, 92vw); background:var(--bg-elev); color:var(--txt); border:1px solid rgba(255,255,255,.12);
-      border-radius:20px; box-shadow:0 30px 60px rgba(0,0,0,.45); padding:0; overflow:hidden;
-    }
-    dialog::backdrop{background:rgba(0,0,0,.6); backdrop-filter: blur(4px)}
-    .modal-head{display:flex; gap:14px; padding:16px; border-bottom:1px solid rgba(255,255,255,.08)}
-    .modal-body{padding:16px; display:grid; gap:12px}
-    .modal-actions{
-      display:flex; justify-content:flex-end; gap:10px; padding:16px; border-top:1px solid rgba(255,255,255,.08);
-      background:linear-gradient(180deg, rgba(255,255,255,.02), rgba(255,255,255,.01));
-    }
-    .pill{font-size:12px; background:var(--chip); padding:6px 10px; border-radius:999px; border:1px solid rgba(255,255,255,.08)}
-    .meta{display:flex; gap:8px; flex-wrap:wrap}
-    .x{margin-left:auto; background:transparent; border:none; color:var(--muted); font-size:22px; cursor:pointer}
-
-    @media (max-width:720px){
-      .search{width:auto}
-      .row{grid-auto-columns: 78%}
-    }
-
-    /* Toast */
-    .toast {
-      position: fixed; inset: auto 16px 16px auto;
-      background: rgba(255,255,255,.08);
-      border: 1px solid rgba(255,255,255,.12);
-      border-radius: 12px; padding: 10px 12px; font-size: 13px; color: var(--muted);
-      backdrop-filter: blur(6px); display: none; z-index: 1000;
-    }
-    .toast.show { display: block; }
-  </style>
-
-  <script>
-    /* -------- Dynamic manifest (no extra file needed) -------- */
-    (function setupDynamicManifest(){
-      const makeIcon = (size) => {
-        const c = document.createElement('canvas'); c.width = c.height = size;
-        const ctx = c.getContext('2d');
-        const g = ctx.createLinearGradient(0,0,size,size);
-        g.addColorStop(0,'#fbbf24'); g.addColorStop(1,'#8b5cf6');
-        ctx.fillStyle = g; ctx.fillRect(0,0,size,size);
-        ctx.globalAlpha = .12; ctx.fillStyle = '#ffffff';
-        for (let i=0;i<size;i+=Math.floor(size/8)){ ctx.fillRect(i,0,1,size); ctx.fillRect(0,i,size,1); }
-        ctx.globalAlpha = 1;
-        ctx.fillStyle = '#07121d'; ctx.beginPath(); ctx.arc(size*0.5, size*0.5, size*0.26, 0, Math.PI*2); ctx.fill();
-        ctx.fillStyle = '#fbbf24'; ctx.beginPath(); ctx.arc(size*0.5, size*0.5, size*0.09, 0, Math.PI*2); ctx.fill();
-        return c.toDataURL('image/png');
-      };
-
-      const icon192 = makeIcon(192);
-      const icon512 = makeIcon(512);
-
-      const apple = document.createElement('link');
-      apple.rel = 'apple-touch-icon';
-      apple.href = icon192;
-      document.head.appendChild(apple);
-
-      const manifest = {
-        id: "/?source=pwa",
-        name: "Buzzy Games Launcher",
-        short_name: "Buzzy Games",
-        start_url: ".",
-        scope: ".",
-        display: "standalone",
-        background_color: "#0b0f14",
-        theme_color: "#0b0f14",
-        icons: [
-          { src: icon192, sizes: "192x192", type: "image/png", purpose: "any maskable" },
-          { src: icon512, sizes: "512x512", type: "image/png", purpose: "any maskable" }
-        ]
-      };
-      const blob = new Blob([JSON.stringify(manifest)], {type:"application/manifest+json"});
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('link');
-      link.rel = 'manifest'; link.href = url;
-      document.head.appendChild(link);
-    })();
-  </script>
+  /* Modal for last-day popup + admin unlock */
+  .modal{position:fixed;inset:0;display:none;align-items:center;justify-content:center;background:rgba(4,8,24,.6)}
+  .modal.show{display:flex}
+  .modal-card{width:min(560px,92vw);border:1px solid var(--border);background:linear-gradient(180deg,#0e193b,#0b132d);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+  .modal-card h2{margin-top:0}
+  .code-input{width:100%;padding:10px;border-radius:10px;border:1px solid var(--border);background:#0f1a3a;color:var(--text)}
+  .small{font-size:12px;opacity:.75}
+  @media (max-width:640px){ .grid{grid-template-columns:repeat(auto-fill,minmax(150px,1fr));} }
+</style>
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">🐝</div>
-      <div>Buzzy Games Launcher</div>
+  <header class="nav">
+    <div class="nav-inner">
+      <div class="brand"><span class="dot"></span> <span>Buzzy Games</span></div>
+      <div class="spacer"></div>
+      <div class="pill" title="People online across the site">
+        <span>Online</span> <strong id="onlineCount">0</strong>
+      </div>
+      <div class="tabs" id="tabs">
+        <button class="tab-btn active" data-tab="browse">Browse</button>
+        <button class="tab-btn" data-tab="drops">Drops</button>
+        <button class="tab-btn" data-tab="analytics">Analytics</button>
+        <!-- Admin tab is injected when unlocked -->
+        <button class="tab-btn" id="adminTab" style="display:none" data-tab="admin">Admin</button>
+      </div>
     </div>
-
-    <div class="grow"></div>
-
-    <div class="search">
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" aria-hidden="true">
-        <path d="M21 21l-3.5-3.5M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="#aab6ca" stroke-width="1.5" stroke-linecap="round"/>
-      </svg>
-      <input id="searchInput" placeholder="Search games…" />
-    </div>
-
-    <button class="btn" id="installBtn" title="Recommended">Install App</button>
   </header>
 
-  <!-- Soft recommendation banner (non-blocking) -->
-  <div class="install-banner" id="installBanner" hidden>
-    <div class="note">For the best experience, <b>install Buzzy Games</b> (recommended).</div>
-    <div class="actions">
-      <button class="btn small" id="bannerInstallBtn">Install</button>
-      <button class="ghost-btn small" id="bannerDismissBtn">Dismiss</button>
+  <main class="wrap">
+    <!-- Browse -->
+    <section id="browse" class="section active">
+      <div class="toolbar">
+        <div class="search">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none"><path d="M21 21l-4.3-4.3M10.5 18a7.5 7.5 0 1 1 0-15 7.5 7.5 0 0 1 0 15Z" stroke="currentColor" stroke-width="2" opacity=".7"/></svg>
+          <input id="searchInput" placeholder="Search games…" />
+        </div>
+        <button class="tab-btn" id="unlockBtn" title="Enter access code to unlock Admin">Unlock</button>
+      </div>
+      <div id="gameGrid" class="grid"></div>
+      <div id="emptyMsg" class="empty" style="display:none">No games found.</div>
+    </section>
+
+    <!-- Drops -->
+    <section id="drops" class="section">
+      <div id="dropsList" class="list"></div>
+      <div id="dropsEmpty" class="empty" style="display:none">No upcoming drops yet.</div>
+    </section>
+
+    <!-- Analytics -->
+    <section id="analytics" class="section">
+      <div class="cards">
+        <div class="stat">
+          <h3>Most Played — This Month</h3>
+          <div id="monthTopList" class="list"></div>
+        </div>
+        <div class="stat">
+          <h3>Most Played — All Time</h3>
+          <div id="allTimeList" class="list"></div>
+        </div>
+        <div class="stat">
+          <h3>Totals</h3>
+          <div class="list">
+            <div class="row"><span>Total Games</span><strong class="mono" id="totalGames">0</strong></div>
+            <div class="row"><span>Total Plays (All Time)</span><strong class="mono" id="totalPlays">0</strong></div>
+            <div class="row"><span>Current Online</span><strong class="mono" id="onlineCount2">0</strong></div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Admin (locked by code) -->
+    <section id="admin" class="section">
+      <div id="adminGate" class="panel" style="display:none">
+        <h3>Admin Access</h3>
+        <p class="small">Enter the access code to manage games and drops.</p>
+        <input id="adminCodeInput" class="code-input" placeholder="Enter code…" />
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button class="btn" id="adminUnlockConfirm">Unlock</button>
+          <button class="btn secondary" id="adminUnlockCancel">Cancel</button>
+        </div>
+      </div>
+
+      <div id="adminWrap" class="admin-wrap" style="display:none">
+        <div class="panel">
+          <h3>Add a Game</h3>
+          <div class="field"><label>Name</label><input id="gName" placeholder="e.g., Drift Racer Pro" /></div>
+          <div class="field"><label>Cover URL</label><input id="gCover" placeholder="https://…" /></div>
+          <div class="field"><label>Game URL (embeddable)</label><input id="gUrl" placeholder="https://… (the game will be iframed)" /></div>
+          <button class="btn" id="addGameBtn">Add Game</button>
+        </div>
+
+        <div class="panel">
+          <h3>Create a Game Drop</h3>
+          <div class="field"><label>Title</label><input id="dTitle" placeholder="e.g., Halloween Mega Drop" /></div>
+          <div class="field"><label>Attach to Game (optional)</label><input id="dGameId" placeholder="Paste Game ID (or leave blank)" /></div>
+          <div class="field"><label>Cover Image URL (optional)</label><input id="dCover" placeholder="https://…" /></div>
+          <div class="field"><label>Start Time</label><input id="dStart" type="datetime-local" /></div>
+          <div class="field"><label>End Time (optional)</label><input id="dEnd" type="datetime-local" /></div>
+          <button class="btn" id="createDropBtn">Create Drop</button>
+        </div>
+
+        <div class="panel">
+          <h3>Games (Manage)</h3>
+          <div id="adminGames" class="list"></div>
+        </div>
+
+        <div class="panel">
+          <h3>Drops (Manage)</h3>
+          <div id="adminDrops" class="list"></div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- Last day of month popup -->
+  <div id="eomModal" class="modal">
+    <div class="modal-card">
+      <h2>🎉 Most Played This Month</h2>
+      <div id="eomContent">Crunching the numbers…</div>
+      <div style="margin-top:14px;text-align:right">
+        <button class="btn secondary" onclick="document.getElementById('eomModal').classList.remove('show')">Close</button>
+      </div>
     </div>
   </div>
 
-  <main>
-    <section id="newSection">
-      <div class="section-head">
-        <h2>New &amp; Noteworthy</h2>
-        <div style="opacity:.75;font-size:12px">Fresh picks from the catalog</div>
+  <!-- Admin unlock modal -->
+  <div id="unlockModal" class="modal">
+    <div class="modal-card">
+      <h2>Enter Access Code</h2>
+      <input id="unlockInput" class="code-input" placeholder="Enter code…" />
+      <div style="margin-top:14px; display:flex; gap:8px; justify-content:flex-end">
+        <button class="btn secondary" onclick="toggleUnlock(false)">Cancel</button>
+        <button class="btn" id="unlockConfirm">Unlock</button>
       </div>
-      <div class="row" id="newRow"></div>
-    </section>
-
-    <section id="genresContainer"></section>
-  </main>
-
-  <!-- Game Details Modal -->
-  <dialog id="gameModal">
-    <div class="modal-head">
-      <div style="width:140px; aspect-ratio:16/9; border-radius:12px; overflow:hidden; border:1px solid rgba(255,255,255,.08)">
-        <img id="modalCover" alt="" style="width:100%; height:100%; object-fit:cover" />
-      </div>
-      <div style="display:flex; flex-direction:column; gap:6px; min-width:0; flex:1">
-        <div style="display:flex; align-items:center; gap:10px;">
-          <h3 id="modalTitle" style="margin:0"></h3>
-          <button class="x" onclick="closeModal()" title="Close">&times;</button>
-        </div>
-        <div class="meta">
-          <span id="modalGenres" class="pill"></span>
-          <span id="modalRelease" class="pill"></span>
-          <span id="modalUrl" class="pill" title="Launch URL"></span>
-        </div>
-      </div>
+      <p class="small" style="margin-top:8px">Hint: admin code ends with <strong>2025</strong>.</p>
     </div>
-    <div class="modal-body">
-      <div id="modalDesc" style="color:var(--muted)"></div>
-    </div>
-    <div class="modal-actions">
-      <button class="btn" id="playBtn">Play</button>
-    </div>
-  </dialog>
+  </div>
 
-  <!-- Update Available Modal (link-only) -->
-  <dialog id="updateDialog">
-    <div class="modal-head">
-      <div style="display:flex;align-items:center;gap:10px;min-width:0;flex:1">
-        <h3 style="margin:0">New update available</h3>
-        <button class="x" id="updCloseBtn" title="Close">&times;</button>
-      </div>
-    </div>
-    <div class="modal-body">
-      <div style="color:var(--muted)">
-        A new deployment of <b>Buzzy Games Launcher</b> is available.
-      </div>
-      <div class="meta" style="margin-top:6px">
-        <span id="updVersion" class="pill">Version –</span>
-        <span id="updSource" class="pill">Source –</span>
-      </div>
-      <div style="font-size:13px;color:var(--muted);line-height:1.5">
-        <ol style="margin:6px 0 0 18px; padding:0">
-          <li>Click <b>Open GitHub</b> to go to the latest release (or the main branch).</li>
-          <li>Click <b>Download ZIP</b>.</li>
-          <li>Replace your old ZIP (or unzip and overwrite your existing files).</li>
-        </ol>
-      </div>
-      <div id="updStatus" style="font-size:12px;color:var(--muted)"></div>
-    </div>
-    <div class="modal-actions">
-      <a class="btn" id="updOpen" href="#" target="_blank" rel="noopener">Open GitHub</a>
-      <a class="btn secondary" id="updZip" href="#" target="_blank" rel="noopener" title="Direct ZIP">Direct ZIP</a>
-      <button class="ghost-btn" id="updDismissBtn" title="Hide until a newer version appears">Dismiss</button>
-    </div>
-  </dialog>
+<script type="module">
+  // ---------- Firebase (CDN Modular SDK) ----------
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
+  import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
+  import {
+    getFirestore, collection, addDoc, setDoc, doc, getDoc, getDocs,
+    updateDoc, deleteDoc, onSnapshot, query, where, orderBy, limit,
+    serverTimestamp, increment
+  } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-firestore.js";
 
-  <!-- Checking toast -->
-  <div id="updateToast" class="toast">Checking for updates…</div>
+  // ---- Your config (as provided)
+  const firebaseConfig = {
+    apiKey: "AIzaSyBI7amPbyDP4cgtWvoooGz9JQAPXJEpCaE",
+    authDomain: "buzzy-games.firebaseapp.com",
+    projectId: "buzzy-games",
+    storageBucket: "buzzy-games.firebasestorage.app",
+    messagingSenderId: "1019717198169",
+    appId: "1:1019717198169:web:8bff09527755e2672c6c48",
+    measurementId: "G-JPPBF2PHDJ"
+  };
 
-  <script>
-    const $ = (sel, el=document) => el.querySelector(sel);
-    const $$ = (sel, el=document) => [...el.querySelectorAll(sel)];
+  const app = initializeApp(firebaseConfig);
+  try { getAnalytics(app); } catch(e){ /* analytics may require https + consent; ignore in dev */ }
+  const db = getFirestore(app);
 
-    /* ---------------- Catalog ---------------- */
-    const catalog = [
-      { title:'2048', url:'https://www.mathsisfun.com/games/a/2048/index.html',
-        image:'https://plays.org/wp-content/uploads/2048-game.png',
-        description:'Slide tiles to combine numbers and reach 2048.',
-        genres:['Puzzle','Casual'], release:'2025-09-08' },
+  // ---------- Helpers ----------
+  const $ = sel => document.querySelector(sel);
+  const el = (tag, attrs={}, children=[]) => {
+    const n = document.createElement(tag);
+    Object.entries(attrs).forEach(([k,v]) => (k==='class'? n.className=v : n.setAttribute(k,v)));
+    children.forEach(c => n.appendChild(typeof c === 'string' ? document.createTextNode(c) : c));
+    return n;
+  };
+  const monthKey = (d=new Date()) => `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`;
+  const lastDayOfMonth = (d=new Date()) => new Date(d.getFullYear(), d.getMonth()+1, 0).getDate();
+  const nowIsoLocal = () => new Date(Date.now() - (new Date()).getTimezoneOffset()*60000).toISOString().slice(0,16);
+  const sessionId = (() => {
+    let id = localStorage.getItem('bz_session');
+    if(!id){ id = crypto.getRandomValues(new Uint32Array(4)).join('-'); localStorage.setItem('bz_session', id); }
+    return id;
+  })();
 
-      { title:'[DOWN] Slope', url:'https://kdata1.com/2020/05/slope/',
-        image:'https://th.bing.com/th/id/R.a1698336509a355d218f5f4211f345d0?rik=ae%2ft9J6scxY7ow&pid=ImgRaw&r=0',
-        description:'High-speed downhill reflex challenge with neon vibes.',
-        genres:['Action','Arcade'], release:'2025-09-08' },
+  // ---------- Presence: site-wide concurrent users ----------
+  async function startSitePresence(){
+    const ref = doc(db, 'sitePresence', sessionId);
+    await setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
+    setInterval(async () => {
+      await setDoc(ref, { lastSeen: serverTimestamp() }, { merge:true });
+    }, 25000);
 
-      { title:'Snow Rider 3D', url:'https://www.hoodamath.com/mobile/games/snow-rider-3d/game.html?nocheckorient=1',
-        image:'https://www.hoodamath.com/large/snowrider3d_300x225.jpg',
-        description:'Sled to get the highest score.',
-        genres:['Action','Strategic'], release:'2025-09-08' },
-
-      { title:'[DOWN] Drive Mad', url:'https://mathplayzone.com/wp-content/uploads/assets/drive-mad/',
-        image:'https://tse1.mm.bing.net/th/id/OIP.odp26kFzqu9k2p8kmeAJGgHaHa?r=0&cb=thfc1ucfimg=1&rs=1&pid=ImgDetMain&o=7&rm=3',
-        description:'Complete levels and drive your way up.',
-        genres:['Action','Strategic'], release:'2025-09-08' },
-
-      { title:'Eggy Car', url:'https://webglmath.github.io/eggy-car/',
-        image:'https://eggycar.co/data/image/image.png',
-        description:'Dont let your egg break.',
-        genres:['Action','Strategic'], release:'2025-09-08' },
-      
-      { title:'Eggy Car', url:'https://webglmath.github.io/eggy-car/',
-        image:'https://eggycar.co/data/image/image.png',
-        description:'Dont let your egg break.',
-        genres:['Action','Strategic'], release:'2025-09-08' },
-    ].map((g,i)=>({ id: (g.title.toLowerCase().replace(/[^a-z0-9]+/g,'-')||`game-${i}`), ...g }));
-
-    /* ---------------- Install UI (recommended only) ---------------- */
-    const LS_INSTALLED = 'buzzy.installed';
-    const LS_BANNER_DISMISSED = 'buzzy.installBannerDismissed';
-    let deferredPrompt = null;
-
-    function isInstalled() {
-      return window.matchMedia('(display-mode: standalone)').matches
-          || window.navigator.standalone === true
-          || document.referrer.startsWith('android-app://')
-          || JSON.parse(localStorage.getItem(LS_INSTALLED) || 'false');
-    }
-    let installed = isInstalled();
-
-    function setInstalled(v){
-      installed = !!v;
-      localStorage.setItem(LS_INSTALLED, JSON.stringify(installed));
-      updateInstallUI();
-    }
-
-    function updateInstallUI(){
-      $('#installBtn').style.display = installed ? 'none' : '';
-      const dismissed = JSON.parse(localStorage.getItem(LS_BANNER_DISMISSED) || 'false');
-      $('#installBanner').hidden = installed || dismissed;
-    }
-
-    window.addEventListener('beforeinstallprompt', (e) => {
-      e.preventDefault();
-      deferredPrompt = e;
-      $('#installBtn').disabled = false;
+    const threshold = new Date(Date.now() - 60000); // last 60s
+    const qy = query(collection(db, 'sitePresence'), where('lastSeen','>=', threshold));
+    onSnapshot(qy, snap => {
+      const count = snap.size;
+      $('#onlineCount').textContent = count;
+      $('#onlineCount2').textContent = count;
     });
-    window.addEventListener('appinstalled', () => setInstalled(true));
+  }
 
-    $('#installBtn').onclick = async () => {
-      if (deferredPrompt) {
-        deferredPrompt.prompt();
-        const choice = await deferredPrompt.userChoice;
-        if (choice.outcome === 'accepted') setInstalled(true);
-        deferredPrompt = null;
-      } else {
-        alert(installHelpText());
+  // ---------- Tabs ----------
+  const tabsEl = $('#tabs');
+  const sections = document.querySelectorAll('.section');
+  tabsEl.addEventListener('click', e => {
+    const btn = e.target.closest('.tab-btn');
+    if(!btn) return;
+    document.querySelectorAll('.tab-btn').forEach(b => b.classList.toggle('active', b===btn));
+    const tab = btn.getAttribute('data-tab');
+    sections.forEach(s => s.classList.toggle('active', s.id === tab));
+    if(tab === 'analytics'){ loadAnalytics(); }
+  });
+
+  // ---------- Unlock / Admin visibility ----------
+  const ADMIN_CODE = 'buzzygamesadmin2025';
+  function isAdmin(){ return localStorage.getItem('bz_admin') === '1'; }
+  function setAdmin(v){
+    if(v){ localStorage.setItem('bz_admin','1'); } else { localStorage.removeItem('bz_admin'); }
+    $('#adminTab').style.display = v ? '' : 'none';
+    if(v){ $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; }
+  }
+  function toggleUnlock(show){
+    $('#unlockModal').classList.toggle('show', !!show);
+    if(show){ setTimeout(()=>$('#unlockInput').focus(),50); }
+  }
+  $('#unlockBtn').addEventListener('click', ()=>toggleUnlock(true));
+  $('#unlockConfirm').addEventListener('click', ()=>{
+    const code = $('#unlockInput').value.trim();
+    if(code === ADMIN_CODE){ setAdmin(true); toggleUnlock(false); $('#adminTab').click(); }
+    else { alert('Incorrect code.'); }
+  });
+
+  // Show Admin tab if already unlocked
+  if(isAdmin()) setAdmin(true);
+
+  // Ensure admin section gate if tab opened without unlock
+  document.querySelector('[data-tab="admin"]').addEventListener?.('click', ()=>{
+    if(!isAdmin()){
+      $('#adminGate').style.display='block';
+      $('#adminWrap').style.display='none';
+    } else {
+      $('#adminGate').style.display='none';
+      $('#adminWrap').style.display='grid';
+    }
+  });
+
+  // Admin gate UI inside Admin tab
+  $('#adminUnlockConfirm')?.addEventListener('click', ()=>{
+    const code = $('#adminCodeInput').value.trim();
+    if(code === ADMIN_CODE){ setAdmin(true); $('#adminGate').style.display='none'; $('#adminWrap').style.display='grid'; }
+    else alert('Incorrect code.');
+  });
+  $('#adminUnlockCancel')?.addEventListener('click', ()=>{ $('#adminTab').click(); });
+
+  // ---------- Browse: load & render games ----------
+  let allGames = []; // cache for search
+  const grid = $('#gameGrid');
+  const emptyMsg = $('#emptyMsg');
+
+  function renderGames(list){
+    grid.innerHTML = '';
+    if(!list.length){ emptyMsg.style.display='block'; return; }
+    emptyMsg.style.display='none';
+    list.forEach(g=>{
+      const card = el('a', { class:'card', href:`embed.html?id=${g.id}`, title:g.name });
+      const img = el('img', { class:'cover', src:g.coverUrl || '', alt:g.name, onerror:"this.src='';this.style.background='#0d1431'" });
+      const body = el('div', { class:'card-body' }, [
+        el('div', { class:'name' }, [g.name || 'Untitled']),
+        el('div', { class:'meta' }, [
+          el('span', { class:'badge' }, [`▶ Plays: ${g.plays ?? 0}`]),
+          el('span', { class:'badge' }, [`👥 Now: ${g.currentPlayers ?? 0}`]),
+        ])
+      ]);
+      card.append(img, body);
+      grid.appendChild(card);
+    });
+  }
+
+  function applySearch(){
+    const q = $('#searchInput').value.toLowerCase().trim();
+    if(!q) return renderGames(allGames);
+    renderGames(allGames.filter(g => (g.name||'').toLowerCase().includes(q)));
+  }
+  $('#searchInput').addEventListener('input', applySearch);
+
+  const gamesRef = collection(db, 'games');
+  const gamesQuery = query(gamesRef, orderBy('name'));
+  onSnapshot(gamesQuery, snap=>{
+    allGames = snap.docs.map(d => ({ id:d.id, ...d.data() }));
+    renderGames(allGames);
+    // Keep analytics “Total Games” updated
+    $('#totalGames').textContent = allGames.length;
+    // Total plays (sum client-side)
+    const total = allGames.reduce((s,g)=> s + (Number(g.plays)||0), 0);
+    $('#totalPlays').textContent = total.toLocaleString();
+    // Fill admin list if unlocked
+    if(isAdmin()) renderAdminGames(allGames);
+  });
+
+  // ---------- Drops (list + countdown) ----------
+  const dropsRef = collection(db, 'drops');
+  const dropsQuery = query(dropsRef, orderBy('startAt', 'asc'));
+  let dropIntervals = [];
+  function clearDropIntervals(){ dropIntervals.forEach(id=>clearInterval(id)); dropIntervals=[]; }
+
+  function fmtCountdown(ms){
+    if(ms <= 0) return 'LIVE';
+    const s = Math.floor(ms/1000);
+    const d = Math.floor(s/86400);
+    const h = Math.floor((s%86400)/3600);
+    const m = Math.floor((s%3600)/60);
+    const ss = s%60;
+    return `${d}d ${String(h).padStart(2,'0')}:${String(m).padStart(2,'0')}:${String(ss).padStart(2,'0')}`;
+  }
+
+  function renderDrops(docs, intoList, isAdmin=false){
+    intoList.innerHTML = '';
+    if(!docs.length){
+      if(intoList.id==='dropsList') $('#dropsEmpty').style.display='block';
+      return;
+    }
+    $('#dropsEmpty').style.display='none';
+    docs.forEach(d=>{
+      const data = d.data(); const id = d.id;
+      const row = el('div', { class:'drop' });
+      if(data.coverUrl){
+        const img = el('img', { src:data.coverUrl, alt:data.title, style:'width:72px;height:48px;object-fit:cover;border-radius:10px;border:1px solid var(--border)' });
+        row.appendChild(img);
       }
-    };
-    $('#bannerInstallBtn').onclick = () => $('#installBtn').click();
-    $('#bannerDismissBtn').onclick = () => {
-      localStorage.setItem(LS_BANNER_DISMISSED, 'true');
-      updateInstallUI();
-    };
-    function installHelpText(){
-      const ua = navigator.userAgent.toLowerCase();
-      if (/iphone|ipad|ipod/.test(ua)) return 'On iPhone/iPad: Share → Add to Home Screen.';
-      if (/android/.test(ua)) return 'On Android Chrome: ⋮ menu → Install app (or Add to Home screen).';
-      return 'On desktop Chrome/Edge: Click the Install icon in the address bar, or use the browser menu.';
-    }
+      const info = el('div', {}, [
+        el('div', { class:'title' }, [data.title || 'Untitled Drop']),
+        el('div', { class:'small' }, [ data.gameId ? `Game: ${data.gameId}` : 'General event'])
+      ]);
+      const cd = el('div', { class:'countdown mono' }, ['…']);
+      row.append(info, cd);
+      if(isAdmin){
+        const del = el('button', { class:'btn secondary', style:'margin-left:10px' }, ['Delete']);
+        del.addEventListener('click', async ()=>{ await deleteDoc(doc(db,'drops',id)); });
+        row.appendChild(del);
+      }
+      intoList.appendChild(row);
 
-    /* ---------------- Render ---------------- */
-    const escapeHtml = (s) => s?.replace(/[&<>"']/g, c=>({ '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])) || '';
-    function makeCoverFallback(title){
-      const colors = [
-        ['#fbbf24','#8b5cf6'], ['#22d3ee','#06b6d4'],
-        ['#34d399','#10b981'], ['#f472b6','#60a5fa'],
-        ['#f59e0b','#f43f5e'], ['#a78bfa','#60a5fa'],
-      ];
-      const [c1,c2] = colors[Math.floor(Math.random()*colors.length)];
-      const svg =
-        `<svg xmlns='http://www.w3.org/2000/svg' width='1200' height='675'>
-          <defs><linearGradient id='g' x1='0' y1='0' x2='1' y2='1'>
-            <stop offset='0' stop-color='${c1}'/><stop offset='1' stop-color='${c2}'/>
-          </linearGradient></defs>
-          <rect width='100%' height='100%' fill='url(#g)'/>
-          <g fill='white' opacity='.12'>
-            <circle cx='200' cy='120' r='90'/><circle cx='1050' cy='540' r='120'/>
-            <rect x='0' y='620' width='1200' height='55'/>
-          </g>
-          <text x='52' y='560' font-family='Segoe UI, Roboto, Helvetica, Arial' font-weight='800' font-size='72' fill='rgba(255,255,255,.96)'>
-            ${title.replace(/&/g,'&amp;')}
-          </text>
-        </svg>`;
-      return 'data:image/svg+xml;utf8,' + encodeURIComponent(svg);
-    }
-
-    function cardHTML(g, showNewBadge=false){
-      const genres = (g.genres||[]).slice(0,3).join(' • ');
-      const newBadge = showNewBadge ? `<div class="badge">NEW</div>` : '';
-      return `
-      <article class="card" data-id="${g.id}">
-        <div class="cover">
-          <img alt="${escapeHtml(g.title)} cover" src="${g.image || ''}" onerror="this.src='${makeCoverFallback(g.title)}'" loading="lazy"/>
-          ${newBadge}
-        </div>
-        <div class="content">
-          <div class="title">${escapeHtml(g.title)}</div>
-          <div class="genres">${escapeHtml(genres)}</div>
-          <div class="desc">${escapeHtml(g.description||'')}</div>
-        </div>
-      </article>`;
-    }
-
-    function render(){
-      const q = $('#searchInput').value.trim().toLowerCase();
-      const all = catalog.filter(g => !q || [g.title, ...(g.genres||[]), (g.description||'')].join(' ')
-        .toLowerCase().includes(q));
-
-      const byDate = [...all].sort((a,b)=> new Date(b.release||0) - new Date(a.release||0));
-      $('#newRow').innerHTML = byDate.slice(0,10).map(g=>cardHTML(g,true)).join('');
-
-      const genres = Array.from(new Set(all.flatMap(g=>g.genres||[]))).sort();
-      const container = $('#genresContainer'); container.innerHTML = '';
-      genres.forEach(genre=>{
-        const items = all.filter(g=> (g.genres||[]).includes(genre));
-        if(!items.length) return;
-        const sec = document.createElement('section');
-        sec.innerHTML = `
-          <div class="section-head"><h2>${genre}</h2></div>
-          <div class="row">${items.map(cardHTML).join('')}</div>
-        `;
-        container.appendChild(sec);
-      });
-
-      attachCardEvents();
-      updateInstallUI();
-    }
-
-    function attachCardEvents(){
-      $$('.card').forEach(card=>{
-        card.onclick = () => openGameModal(card.getAttribute('data-id'));
-      });
-    }
-
-    /* ---------------- Modal & Play ---------------- */
-    function openGameModal(id){
-      const g = catalog.find(x=>x.id===id); if(!g) return;
-      $('#modalCover').src = g.image || makeCoverFallback(g.title);
-      $('#modalTitle').textContent = g.title;
-      $('#modalGenres').textContent = (g.genres||[]).join(' • ') || '—';
-      $('#modalRelease').textContent = `Released ${g.release || '—'}`;
-      try{ $('#modalUrl').textContent = new URL(g.url).host; }catch{ $('#modalUrl').textContent = g.url; }
-      $('#modalDesc').textContent = g.description || 'No description yet.';
-      $('#playBtn').onclick = () => {
-        const q = new URLSearchParams({ url: g.url, title: g.title, image: g.image || '', desc: g.description || '' });
-        location.href = `./embed.html?${q.toString()}`;
+      // live countdown
+      const tick = ()=>{
+        const now = Date.now();
+        const start = data.startAt?.toMillis ? data.startAt.toMillis() : (data.startAt || 0);
+        const end = data.endAt?.toMillis ? data.endAt.toMillis() : (data.endAt || null);
+        if(now < start) cd.textContent = fmtCountdown(start - now);
+        else if(end && now <= end) cd.textContent = 'LIVE';
+        else cd.textContent = 'Ended';
       };
-      $('#gameModal').showModal();
+      tick();
+      const iid = setInterval(tick, 1000);
+      dropIntervals.push(iid);
+    });
+  }
+
+  onSnapshot(dropsQuery, snap=>{
+    clearDropIntervals();
+    renderDrops(snap.docs, $('#dropsList'));
+    if(isAdmin()) renderDrops(snap.docs, $('#adminDrops'), true);
+  });
+
+  // ---------- Analytics tab ----------
+  async function loadAnalytics(){
+    // Month top list
+    const mk = monthKey(new Date());
+    const monthQuery = query(collection(db, 'monthlyPlays'), where('month','==', mk), orderBy('count','desc'), limit(10));
+    const monthSnap = await getDocs(monthQuery);
+    const monthList = $('#monthTopList'); monthList.innerHTML='';
+    monthSnap.forEach(d=>{
+      const x = d.data();
+      const row = el('div', { class:'row' }, [ el('span', {}, [x.gameName || x.gameId]), el('strong', { class:'mono' }, [String(x.count||0)]) ]);
+      monthList.appendChild(row);
+    });
+    if(monthSnap.empty){ monthList.innerHTML = '<div class="small">No plays yet this month.</div>'; }
+
+    // All-time from games
+    const allList = $('#allTimeList'); allList.innerHTML='';
+    const allSorted = [...allGames].sort((a,b)=> (b.plays||0)-(a.plays||0)).slice(0,10);
+    allSorted.forEach(g=>{
+      const row = el('div', { class:'row' }, [ el('span', {}, [g.name||'Untitled']), el('strong', { class:'mono' }, [String(g.plays||0)]) ]);
+      allList.appendChild(row);
+    });
+    if(!allSorted.length){ allList.innerHTML = '<div class="small">No games yet.</div>'; }
+  }
+
+  // ---------- End-of-month popup ----------
+  async function maybeShowEOM(){
+    const today = new Date();
+    if(today.getDate() !== lastDayOfMonth(today)) return; // only last calendar day
+    const mk = monthKey(today);
+    const qy = query(collection(db,'monthlyPlays'), where('month','==',mk), orderBy('count','desc'), limit(1));
+    const snap = await getDocs(qy);
+    const box = $('#eomContent');
+    if(snap.empty){
+      box.innerHTML = 'No gameplay recorded this month.';
+    } else {
+      const top = snap.docs[0].data();
+      box.innerHTML = `
+        <div style="display:flex; gap:12px; align-items:center">
+          ${top.coverUrl ? `<img src="${top.coverUrl}" alt="" style="width:96px;height:60px;object-fit:cover;border-radius:10px;border:1px solid var(--border)"/>` : ''}
+          <div>
+            <div style="font-weight:800;font-size:18px">${top.gameName || 'Top Game'}</div>
+            <div class="small">Plays: <strong>${top.count||0}</strong> in ${mk}</div>
+          </div>
+        </div>`;
     }
-    function closeModal(){ $('#gameModal').close(); }
+    $('#eomModal').classList.add('show');
+  }
 
-    /* ---------------- PWA SW (optional but nice) ---------------- */
-    if('serviceWorker' in navigator){
-      window.addEventListener('load', () => {
-        navigator.serviceWorker.register('./sw.js').catch(console.warn);
-      });
-    }
+  // ---------- Admin actions ----------
+  async function addGame(){
+    const name = $('#gName').value.trim();
+    const coverUrl = $('#gCover').value.trim();
+    const gameUrl = $('#gUrl').value.trim();
+    if(!name || !gameUrl){ alert('Name and Game URL are required.'); return; }
+    await addDoc(collection(db,'games'), { name, coverUrl, gameUrl, plays:0, currentPlayers:0, createdAt: serverTimestamp() });
+    $('#gName').value=''; $('#gCover').value=''; $('#gUrl').value='';
+  }
+  $('#addGameBtn').addEventListener('click', addGame);
 
-    /* ---------------- UPDATE CHECK (link-only popup) ---------------- */
-    const GH_REPO = 'BuzzyBoy42/buzzygames';
-    const LS_LAST_SEEN_VERSION = 'buzzy.lastSeenVersion';
-    const LS_LAST_PROMPTED_VERSION = 'buzzy.lastPromptedVersion';
-    const LS_LAST_CHECK = 'buzzy.revCheckedAt';
-    const CHECK_INTERVAL_MS = 6 * 60 * 60 * 1000; // 6h
+  function renderAdminGames(list){
+    const box = $('#adminGames'); box.innerHTML='';
+    list.forEach(g=>{
+      const row = el('div', { class:'row' }, [
+        el('span', {}, [`${g.name} `, el('span',{class:'small'},[`(#${g.id.slice(0,6)})`])]),
+        el('div', {}, [
+          el('button', { class:'btn secondary', style:'margin-right:6px' }, ['Open Embed']).addEventListener('click',()=>{ location.href=`embed.html?id=${g.id}`; }),
+          (()=>{ const btn = el('button',{class:'btn secondary'},['Delete']);
+            btn.addEventListener('click', async ()=>{ if(confirm('Delete this game?')) await deleteDoc(doc(db,'games',g.id)); });
+            return btn; })()
+        ])
+      ]);
+      box.appendChild(row);
+    });
+  }
 
-    const toast = $('#updateToast');
-    const updDlg = $('#updateDialog');
-    const updVersion = $('#updVersion');
-    const updSource  = $('#updSource');
-    const updStatus  = $('#updStatus');
-    const btnOpen    = $('#updOpen');
-    const btnZip     = $('#updZip');
-    const btnClose   = $('#updCloseBtn');
-    const btnDismiss = $('#updDismissBtn');
-
-    function showToast(msg){ if (toast){ toast.textContent = msg; toast.classList.add('show'); } }
-    function hideToast(){ toast?.classList.remove('show'); }
-
-    // Optional: avoid rate limits / access private repos:
-    // localStorage.setItem('buzzy.ghToken', 'ghp_...')
-    function ghHeaders(extra = {}) {
-      const h = { 'Accept': 'application/vnd.github+json', ...extra };
-      const t = (localStorage.getItem('buzzy.ghToken') || '').trim();
-      if (t) h['Authorization'] = `Bearer ${t}`;
-      return h;
-    }
-
-    async function latestReleaseMeta(){
-      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/releases/latest`, {
-        headers: ghHeaders(), cache:'no-store'
-      });
-      if (!r.ok) throw new Error(`releases/latest: ${r.status}`);
-      const j = await r.json();
-      const pageUrl = `https://github.com/${GH_REPO}/releases/latest`;
-      // Prefer a zip asset; else use zipball_url
-      let zipUrl = j.zipball_url || pageUrl;
-      if (Array.isArray(j.assets) && j.assets.length){
-        const a = j.assets.find(x => /zip$/i.test(x.browser_download_url)) || j.assets[0];
-        zipUrl = a.browser_download_url || zipUrl;
-      }
-      const version = j.tag_name || (j.name || '').trim() || (j.published_at || '').slice(0,10);
-      return { source:'Release', version, pageUrl, zipUrl };
-    }
-
-    async function latestCommitMeta(){
-      const r = await fetch(`https://api.github.com/repos/${GH_REPO}/commits/main`, {
-        headers: ghHeaders(), cache:'no-store'
-      });
-      if (!r.ok) throw new Error(`commits/main: ${r.status}`);
-      const j = await r.json();
-      const sha7 = (j.sha || '').slice(0,7);
-      const pageUrl = `https://github.com/${GH_REPO}`;
-      const zipUrl  = `https://github.com/${GH_REPO}/archive/refs/heads/main.zip`;
-      return { source:'Commit', version: sha7, pageUrl, zipUrl };
-    }
-
-    async function getLatestMeta(){
-      try { return await latestReleaseMeta(); }
-      catch { return await latestCommitMeta(); }
-    }
-
-    function shouldShowPopup(remoteVersion){
-      const lastSeen = localStorage.getItem(LS_LAST_SEEN_VERSION);      // our best guess of what user has
-      const lastPrompted = localStorage.getItem(LS_LAST_PROMPTED_VERSION);
-      if (!lastSeen){
-        // First run: assume up-to-date; record and don't bother the user.
-        localStorage.setItem(LS_LAST_SEEN_VERSION, remoteVersion);
-        return false;
-      }
-      if (remoteVersion === lastSeen) return false;               // already up-to-date
-      if (remoteVersion === lastPrompted) return false;           // we've already told them about this one
-      return true;
-    }
-
-    function fillAndOpenDialog(meta){
-      updVersion.textContent = `Version ${meta.version || '—'}`;
-      updSource.textContent  = `Source ${meta.source}`;
-      btnOpen.href = meta.pageUrl;
-      btnZip.href  = meta.zipUrl;
-      updStatus.textContent = '';
-      updDlg.showModal();
-    }
-
-    btnClose.onclick = () => updDlg.close();
-    btnDismiss.onclick = () => {
-      const v = updVersion.textContent.replace(/^Version\s+/i,'').trim();
-      if (v) localStorage.setItem(LS_LAST_PROMPTED_VERSION, v);
-      updDlg.close();
+  async function createDrop(){
+    const title = $('#dTitle').value.trim();
+    const gameId = $('#dGameId').value.trim();
+    const coverUrl = $('#dCover').value.trim();
+    const startVal = $('#dStart').value;
+    if(!title || !startVal){ alert('Title and start time are required.'); return; }
+    const endVal = $('#dEnd').value;
+    const payload = {
+      title, gameId: gameId || null, coverUrl: coverUrl || null,
+      startAt: new Date(startVal), endAt: endVal ? new Date(endVal) : null,
+      createdAt: serverTimestamp()
     };
+    await addDoc(collection(db,'drops'), payload);
+    $('#dTitle').value=''; $('#dGameId').value=''; $('#dCover').value='';
+    $('#dStart').value=''; $('#dEnd').value='';
+  }
+  $('#createDropBtn').addEventListener('click', createDrop);
 
-    async function checkForUpdates(force=false){
-      const last = +(localStorage.getItem(LS_LAST_CHECK) || 0);
-      if (!force && (Date.now() - last) < CHECK_INTERVAL_MS) return;
-      localStorage.setItem(LS_LAST_CHECK, String(Date.now()));
-
-      showToast('Checking for updates…');
-      try {
-        const meta = await getLatestMeta(); // {version, source, pageUrl, zipUrl}
-        if (meta?.version && shouldShowPopup(meta.version)){
-          fillAndOpenDialog(meta);
-        }
-      } catch (e){
-        // Silent failure: do not annoy user if GH is unreachable
-        console.warn('Update check failed:', e);
-      } finally {
-        setTimeout(hideToast, 800);
-      }
-    }
-
-    // Kick off checks
-    (async () => {
-      checkForUpdates(true);
-      document.addEventListener('visibilitychange', () => { if (!document.hidden) checkForUpdates(false); });
-      setInterval(()=> checkForUpdates(false), CHECK_INTERVAL_MS);
-
-      // Debug: Shift+U to force a check
-      window.addEventListener('keydown', (ev)=>{
-        if (ev.shiftKey && (ev.key==='U' || ev.key==='u')) checkForUpdates(true);
-      });
-    })();
-
-    // Init UI
-    $('#searchInput').addEventListener('input', render);
-    render();
-  </script>
+  // ---------- Init ----------
+  startSitePresence();
+  maybeShowEOM();
+</script>
 </body>
 </html>
