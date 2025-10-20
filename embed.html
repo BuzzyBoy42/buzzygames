@@ -4,23 +4,24 @@
 <meta charset="utf-8" />
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
 <title>Play • Buzzy Games</title>
-<meta name="theme-color" content="#0b1220" />
+<meta name="theme-color" content="#0a0a0a" />
 <style>
   :root{
-    --bg:#0b1220; --bar:#0e1839; --border:rgba(255,255,255,.1); --text:#e8f0ff; --muted:#b8c6e3; --brand:#7c5cff;
+    --bg:#0a0a0a; --bar:#101010; --border:rgba(255,255,255,.1);
+    --text:#f5f5f5; --muted:#cfcfcf; --accent:#ff7a18;
   }
   html,body{height:100%}
   body{margin:0;background:var(--bg);color:var(--text);font-family:ui-sans-serif,system-ui,Segoe UI,Roboto,Arial,sans-serif}
   .bar{
     position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:10px;padding:10px 12px;
-    background:linear-gradient(180deg,var(--bar),#0b132d);border-bottom:1px solid var(--border)
+    background:linear-gradient(180deg,var(--bar),#0c0c0c);border-bottom:1px solid var(--border)
   }
-  .btn{background:#0f1a3a;color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer}
-  .btn.primary{background:linear-gradient(180deg,var(--brand),#5d46d6);border:0;font-weight:800}
+  .btn{background:#111;color:var(--text);border:1px solid var(--border);padding:8px 12px;border-radius:10px;cursor:pointer}
+  .btn.primary{background:var(--accent);border:0;color:#000;font-weight:900}
   .spacer{flex:1}
-  .title{font-weight:800;letter-spacing:.2px}
-  .pill{border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px;opacity:.9}
-  iframe{display:block;width:100%;height:calc(100vh - 52px);border:0;background:#0c1431}
+  .title{font-weight:900;letter-spacing:.2px}
+  .pill{border:1px solid var(--border);padding:6px 10px;border-radius:999px;font-size:12px;color:var(--muted)}
+  iframe{display:block;width:100%;height:calc(100vh - 52px);border:0;background:#0c0c0c}
 </style>
 </head>
 <body>
@@ -28,14 +29,14 @@
     <button class="btn" id="backBtn">← Back</button>
     <div class="title" id="gameTitle">Loading…</div>
     <div class="spacer"></div>
-    <div class="pill" title="Players in this game right now">👥 <span id="nowCount">0</span></div>
+    <div class="pill" title="Players playing this game">👥 <span id="nowCount">0</span> Playing</div>
     <button class="btn" id="openBtn" title="Open game URL in a new tab">Open</button>
     <button class="btn primary" id="shareBtn" title="Copy share link">Share</button>
   </div>
   <iframe id="frame" sandbox="allow-scripts allow-same-origin allow-pointer-lock allow-forms allow-popups allow-popups-to-escape-sandbox" referrerpolicy="no-referrer"></iframe>
 
 <script type="module">
-  // ---------- Firebase ----------
+  /* Firebase */
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-app.js";
   import { getAnalytics } from "https://www.gstatic.com/firebasejs/10.12.4/firebase-analytics.js";
   import {
@@ -51,14 +52,12 @@
     appId: "1:1019717198169:web:8bff09527755e2672c6c48",
     measurementId: "G-JPPBF2PHDJ"
   };
-
   const app = initializeApp(firebaseConfig);
   try { getAnalytics(app); } catch(e){}
-
   const db = getFirestore(app);
 
-  // ---------- Helpers ----------
-  const $ = sel => document.querySelector(sel);
+  /* Helpers */
+  const $ = s => document.querySelector(s);
   const params = new URLSearchParams(location.search);
   const gameId = params.get('id');
   if(!gameId){ alert('Missing game id'); }
@@ -69,7 +68,6 @@
     return id;
   })();
 
-  // site-wide presence update (so analytics “online” counts include embed sessions)
   async function bumpSitePresence(){
     const ref = doc(db, 'sitePresence', sessionId);
     await setDoc(ref, { lastSeen: serverTimestamp() }, { merge: true });
@@ -77,7 +75,7 @@
   bumpSitePresence();
   setInterval(bumpSitePresence, 25000);
 
-  // ---------- Load game ----------
+  /* Load game */
   const gRef = doc(db, 'games', gameId);
   const gSnap = await getDoc(gRef);
   if(!gSnap.exists()){
@@ -93,31 +91,27 @@
     });
   }
 
-  // ---------- Metrics: plays + current players + monthly plays ----------
-  // Increment plays once per load
-  try { await updateDoc(gRef, { plays: increment(1) }); } catch(e){ /* if missing doc or perms, ignore */ }
-
-  // Increment currentPlayers on join, decrement on leave
-  async function incPlayers(delta){
-    try { await updateDoc(gRef, { currentPlayers: increment(delta) }); } catch(e){}
-  }
+  /* Metrics */
+  try { await updateDoc(gRef, { plays: increment(1) }); } catch(e){}
+  async function incPlayers(delta){ try { await updateDoc(gRef, { currentPlayers: increment(delta) }); } catch(e){} }
   await incPlayers(+1);
-  window.addEventListener('beforeunload', ()=>{ navigator.sendBeacon?.('/', ''); /* nudge */ });
+
+  // Best-effort decrement on leave/hidden
+  window.addEventListener('beforeunload', ()=>{ navigator.sendBeacon?.('/', ''); });
   window.addEventListener('pagehide', ()=>{ incPlayers(-1); });
   document.addEventListener('visibilitychange', ()=>{ if(document.visibilityState === 'hidden'){ incPlayers(-1); } else { incPlayers(+1); } });
 
-  // Keep a presence heartbeat per game (optional, for future correction if needed)
+  // Heartbeat per-game (future reconciliation)
   const presRef = doc(db, `gamePresence/${gameId}/sessions`, sessionId);
   await setDoc(presRef, { lastSeen: serverTimestamp() }, { merge:true });
   setInterval(()=> setDoc(presRef, { lastSeen: serverTimestamp() }, { merge:true }), 25000);
 
-  // Keep the live "now" badge updated from game doc
   onSnapshot(gRef, snap=>{
     const d = snap.data();
     $('#nowCount').textContent = Math.max(0, Number(d?.currentPlayers||0));
   });
 
-  // Record monthly plays document for EOM leaderboard
+  // Monthly plays record
   function monthKey(d=new Date()){ return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}`; }
   try {
     const mk = monthKey(new Date());
@@ -129,7 +123,7 @@
     }, { merge:true });
   } catch(e){}
 
-  // ---------- UI ----------
+  /* UI */
   $('#backBtn').addEventListener('click', ()=> {
     if(document.referrer && document.referrer.includes(location.host)) history.back();
     else location.href = 'index.html';
